@@ -1,5 +1,6 @@
 # ======================================
-# WACA API SDK (Python)
+# Python WACA SDK
+# Python SDK with Wasabi Account Control API
 # No guaranty from Wasabi Inc.
 # ======================================
 # WACA global variables
