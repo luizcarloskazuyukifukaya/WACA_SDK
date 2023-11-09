@@ -15,7 +15,7 @@
 # If the WACA Profile need to be modified, for case of debugging or/and to switch between multiple API KEYS/URLS
 # this variable can be modified at the initiation stage before calling the functions to interact with WACA
 # EXAMPLE
-# (implement the followin code in your source code at the initiation stage)
+# (implement the following code in your source code at the initiation stage)
 # import waca_global as g
 # g.GBL_WACA_PROFILE = 'wasabi'
 

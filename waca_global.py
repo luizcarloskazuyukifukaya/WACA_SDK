@@ -1,6 +1,6 @@
 # ======================================
 # WACA API SDK (Python)
-# No guarranty from Wasabi Inc.
+# No guaranty from Wasabi Inc.
 # ======================================
 # WACA global variables
 
