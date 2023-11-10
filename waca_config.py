@@ -4,7 +4,7 @@
 # No guaranty from Wasabi Inc.
 # ======================================
 
-# Define function to purse configuration file (waca.conf)
+# Define function to parse configuration file (waca.conf)
 # INPUT: config file
 # OUTPUT: dictionary {'endpoint_url':'<URL>', 'api_key_value':'<API_KEY_VALUE>', 'profile':'<PROFILE_NAME>'}
 # -------------------------------------------------------------------------------------------------------------
