@@ -37,7 +37,7 @@ home = expanduser("~")
 INVALID_KEY = 'no_key'
 INVALID_VALUE = ''
 
-def pursue_conf():
+def parse_conf():
     # global variable
     # g.GBL_WACA_PROFILE
     # g.GBL_WACA_CONF_SUB_PATH
@@ -130,12 +130,12 @@ def main():
     
     if len(sys.argv) == 1:
         g.GBL_WACA_PROFILE = 'default'
-        api_conf = pursue_conf()
+        api_conf = parse_conf()
     else:
         print(sys.argv[1])
         g.GBL_WACA_PROFILE = sys.argv[1]
         print(g.GBL_WACA_PROFILE)
-        api_conf = pursue_conf()
+        api_conf = parse_conf()
         
     print(api_conf)
 

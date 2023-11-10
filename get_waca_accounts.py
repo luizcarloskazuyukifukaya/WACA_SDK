@@ -6,9 +6,9 @@
 
 # WACA API Authentication Python Code Sample
 import requests
-#from get_waca_config import pursue_conf
+#from get_waca_config import parse_conf
 #import get_waca_config
-from waca_config import pursue_conf
+from waca_config import parse_conf
 
 # WACA Configuration file related
 # This is to use the followings as kind of global variable:
@@ -20,7 +20,7 @@ import waca_global as g
 # to the entry on the waca.conf
 g.GBL_WACA_PROFILE = 'wasabi'
 
-api_conf = pursue_conf()
+api_conf = parse_conf()
 print(api_conf)
 
 ## URL (Beta site) [/v1/accounts]
