@@ -47,7 +47,8 @@ import waca_global as g
 # Set logging level
 logger.setLevel(g.GBL_WACA_LOG_LEVEL)
 level = logger.level
-print("Current Logging Level is", level)
+logger.debug(f"Current Logging Level is {level}")
+logger.debug(f"Global Profile defined is {g.GBL_WACA_PROFILE}")
 
 from os.path import expanduser
 home = expanduser("~")
@@ -62,13 +63,14 @@ def parse_conf():
     # g.GBL_WACA_CONF_SUB_PATH
     
     target_profile = ''
+    profile = ''
     waca_api_inf = {'api_key':'', 'endpoint':''}
 
     if len(g.GBL_WACA_PROFILE) == 0:
         g.GBL_WACA_PROFILE = 'default'
-        
+    
     profile = g.GBL_WACA_PROFILE
-    logger.info('Target profile is ' + profile)
+    logger.info(f"Target profile is {profile}")
          
     # profile is set either default or specific value    
     target_profile = '[' + profile + ']';
@@ -155,12 +157,16 @@ def main():
         g.GBL_WACA_PROFILE = 'default'
         api_conf = parse_conf()
     else:
-        logger.debug(sys.argv[1])
+        logger.debug(f"Parameter is provided: {sys.argv[1]}")
         g.GBL_WACA_PROFILE = sys.argv[1]
-        logger.debug(g.GBL_WACA_PROFILE)
         api_conf = parse_conf()
     logger.debug(api_conf)
+    return api_conf
 
 # for the execution of this script only
+# If parameter is specified, the first one will be considered as target profile
+# while remaining is dismissed
+# Example: python3 waca_config.py wasabi
+# For this case, "wasabi" is used to specify the target profile
 if __name__ == "__main__":
     main()

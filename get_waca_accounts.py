@@ -6,9 +6,6 @@
 
 # WACA API Authentication Python Code Sample
 import requests
-#from get_waca_config import parse_conf
-#import get_waca_config
-from waca_config import parse_conf
 
 # WACA Configuration file related
 # This is to use the followings as kind of global variable:
@@ -18,41 +15,87 @@ import waca_global as g
 
 # if needed, switch the profile by changing the g.GBL_WACA_PROFILE
 # to the entry on the waca.conf
-g.GBL_WACA_PROFILE = 'wasabi'
+#g.GBL_WACA_PROFILE = 'wasabi'
 
-api_conf = parse_conf()
-print(api_conf)
+import logging
 
-## URL (Beta site) [/v1/accounts]
-url = api_conf['endpoint']
-## API Key value
-api_key_value = api_conf['api_key']
+# WACA configuration handdler
+#import waca_config
+from waca_config import parse_conf
 
-## Request Header with API Key Authentication
-api_head = {
-    'Authorization':api_key_value
-}
+# Create logger object
+logging.basicConfig()   # This is important
+logger = logging.getLogger(__name__)
+
+# Set logging level (default is WARNING)
+# DEBUG    - 10
+# INFO     - 20
+# WARNING  - 30
+# ERROR    - 40
+# CRITICAL - 50
+
+# logger samples
+# logger.info("This is a info log.")
+# logger.warning("This is a warning log.")
+
+# WACA Global variables
+import waca_global as g
+
+# Set loggin(g level
+logger.setLevel(g.GBL_WACA_LOG_LEVEL)
+level = logger.level
+logger.debug(f"Current Logging Level is {level}")
 
 ## WACA API specific URL
 # -----------------------------------------------
+# GET All Sub-Accounts
 # https://docs.wasabi.com/docs/get-all-sub-accounts
-# GET /v1/accounts
+# GET /v1/acco(unts
 # -----------------------------------------------
-url = url + '/v1/accounts'
+# List all sub-acco(unts
+# (with summary profile information)
+# that are associated with the Control Account (as authenticated via the API K(ey).
+def get_all_subaccounts():
+    # read WACA config file (~/.wasabi/waca.conf)
+    api_conf = parse_conf()
 
-## GET request
-r = requests.get( url, headers=api_head);
+    ## URL (Beta site) [/v1/accounts]
+    url = api_conf['endpoint']
+    ## API Key value
+    api_key_value = api_conf['api_key']
+    logger.debug(f"API Key is {api_key_value}")
 
-## Response status code
-print(f"status: {r.status_code}") ; 
+    ## Request Header with API Key Authentication
+    api_head = {
+        'Authorization':api_key_value
+    }
 
-## Response JSON
-print(f"{r.json()}");  
+    url = url + '/v1/accounts'
+    logger.info(f"Target URL is {url}")
 
-## Sub-Accounts Information
-for acct in r.json():
-    print("===================================================================================");
-    print(acct);
-    print("-----------------------------------------------------------------------------------");
-    print(f"Account Number: {acct['AcctNum']}");
-    print(f"Account Name  : {acct['AcctName']}");
+    ## GET request
+    r = requests.get( url, headers=api_head);
+
+    ## Response status code
+    logger.info(f"status: {r.status_code}") ; 
+
+    ## Response JSON
+    logger.debug(f"{r.json()}");  
+    logger.debug(f"{type(r.json())}");  
+ 
+    #print(f"{r.json()}");  
+    #print(f"{type(r.json())}");  
+
+    ## Sub-Accounts Information
+    for acct in r.json():
+        logger.debug("===================================================================================");
+        logger.debug(acct);
+        logger.debug("-----------------------------------------------------------------------------------");
+        logger.debug(f"Account Number: {acct['AcctNum']}");
+        logger.debug(f"Account Name  : {acct['AcctName']}");
+        
+    return r.json
+
+# for the execution of this script only
+if __name__ == "__main__":
+    all_subaccounts = get_all_subaccounts()
