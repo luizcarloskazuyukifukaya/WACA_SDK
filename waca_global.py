@@ -30,4 +30,9 @@ GBL_WACA_PROFILE = "default"
 # GBL_WACA_PROFILE = 'wasabi'
 # ( ~/.wasabi/waca.conf to have the [<GBL_WACA_PROFILE>] section)
 
-
+# Logging Level
+#GBL_WACA_LOG_LEVEL = 50 # CRITICAL (logging.CRITICAL)
+#GBL_WACA_LOG_LEVEL = 40 # ERROR (logging.ERROR)
+#GBL_WACA_LOG_LEVEL = 30 # WARNING (logging.WARNING) [DEFAULT]
+#GBL_WACA_LOG_LEVEL = 20 # INFO (logging.INFO)
+GBL_WACA_LOG_LEVEL = 10 # INFO (logging.DEBUG)

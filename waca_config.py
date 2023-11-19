@@ -25,10 +25,29 @@
 # import waca_global as g
 # g.GBL_WACA_PROFILE = 'wasabi'
 
+import logging
+
+# Create logger object
+logging.basicConfig()   # This is important
+logger = logging.getLogger(__name__)
+
+# Set logging level (default is WARNING)
+# DEBUG    - 10
+# INFO     - 20
+# WARNING  - 30
+# ERROR    - 40
+# CRITICAL - 50
+
+# logger samples
+# logger.info("This is a info log.")
+# logger.warning("This is a warning log.")
+
 import waca_global as g
 
-from logging import getLogger
-logger = getLogger(__name__)
+# Set logging level
+logger.setLevel(g.GBL_WACA_LOG_LEVEL)
+level = logger.level
+print("Current Logging Level is", level)
 
 from os.path import expanduser
 home = expanduser("~")
@@ -49,7 +68,7 @@ def parse_conf():
         g.GBL_WACA_PROFILE = 'default'
         
     profile = g.GBL_WACA_PROFILE
-    print('Target profile is ' + profile)
+    logger.info('Target profile is ' + profile)
          
     # profile is set either default or specific value    
     target_profile = '[' + profile + ']';
@@ -115,11 +134,10 @@ def extract_key(l):
     # split the line by ':'
     keys = l.split('=')
     
-    #print(keys)
     if len(keys) == 2:
         return f"{keys[0].strip()}",f"{keys[1].strip()}";
     else:
-        print("The configuration file syntax is not correct. Please check the format of the file.");
+        logger.error("The configuration file syntax is not correct. Please check the format of the file.");
         return INVALID_KEY, INVALID_VALUE;
 
 # Main function defined here
@@ -127,17 +145,21 @@ import sys
 
 def main():
     #g.GBL_WACA_PROFILE
-    
+    logger.debug(f"Logging Level        :: {g.GBL_WACA_LOG_LEVEL}")
+    logger.info(f"Logging Level         :: {g.GBL_WACA_LOG_LEVEL}")
+    logger.warning(f"Logging Level      :: {g.GBL_WACA_LOG_LEVEL}")
+    logger.error(f"Logging Level        :: {g.GBL_WACA_LOG_LEVEL}")
+    logger.critical(f"Logging Level     :: {g.GBL_WACA_LOG_LEVEL}")
+  
     if len(sys.argv) == 1:
         g.GBL_WACA_PROFILE = 'default'
         api_conf = parse_conf()
     else:
-        print(sys.argv[1])
+        logger.debug(sys.argv[1])
         g.GBL_WACA_PROFILE = sys.argv[1]
-        print(g.GBL_WACA_PROFILE)
+        logger.debug(g.GBL_WACA_PROFILE)
         api_conf = parse_conf()
-        
-    print(api_conf)
+    logger.debug(api_conf)
 
 # for the execution of this script only
 if __name__ == "__main__":
