@@ -98,4 +98,12 @@ def get_all_subaccounts():
 
 # for the execution of this script only
 if __name__ == "__main__":
+    logger.debug(f"Calling all_subaccounts() ...")
+      
     all_subaccounts = get_all_subaccounts()
+
+    logger.debug(f"all_subaccounts() completed.")  
+
+    ## return value 
+    logger.debug(f"{all_subaccounts}");  
+    logger.debug(f"{type(all_subaccounts)}");  
