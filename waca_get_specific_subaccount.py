@@ -45,14 +45,43 @@ logger.debug(f"Current Logging Level is {level}")
 
 ## WACA API specific URL
 # -----------------------------------------------
-# GET All Sub-Accounts
-# https://docs.wasabi.com/docs/get-all-sub-accounts
-# GET /v1/accounts
+# GET a Specific Sub-Account
+# https://docs.wasabi.com/docs/get-a-specific-sub-account
+# GET /v1/accounts/<AcctNum>
 # -----------------------------------------------
-# List all sub-accounts
-# (with summary profile information)
-# that are associated with the Control Account (as authenticated via the API K(ey).
-def get_all_subaccounts():
+
+############################################################################# 
+# Get summary information about the specified  sub-account
+# -----------------------------------------
+# =========================================
+# ******************* 
+#  Parameters
+# *******************
+# Input parameter
+# int
+# AcctNum   # int (MANDATORY)
+# AcctNum is the unique ID assigned per sub-account
+# ******************* 
+#  Return value
+# *******************
+# SUCCESS
+#  {
+#        "AcctNum": 30059,
+#        "AcctName": "jk@wasabi.com",
+#        "CreateTime": "2020-06-08T12:12:10Z",
+#        "IsTrial": false,
+#        "Inactive": false,
+#        "SendPasswordResetToSubAccountEmail": true
+#   }
+# FAIL
+# {} # NULL (dictionary)
+#
+# =========================================
+# Example:
+#   account = get_a_specific_subaccount(acctNum)
+#
+############################################################################# 
+def get_a_specific_subaccount(acctNum):
     # read WACA config file (~/.wasabi/waca.conf)
     api_conf = parse_conf()
 
@@ -67,7 +96,7 @@ def get_all_subaccounts():
         'Authorization':api_key_value
     }
 
-    url = url + '/v1/accounts'
+    url = url + '/v1/accounts' + '/' + str(acctNum)
     logger.info(f"Target URL is {url}")
 
     ## GET request
@@ -85,27 +114,43 @@ def get_all_subaccounts():
     #print(f"{type(r.json())}");  
 
     ## Sub-Accounts Information
-    accts = {}
+    acct = {}
     if r.status_code == 200:
-        accts = r.json()       
-
-    for acct in accts:
+        acct = r.json()       
         logger.debug("===================================================================================");
         logger.debug(acct);
         logger.debug("-----------------------------------------------------------------------------------");
-        logger.debug(f"Account Number: {acct['AcctNum']}");
-        logger.debug(f"Account Name  : {acct['AcctName']}");
+        logger.info(f"Account Number: {acct['AcctNum']}");
+        logger.info(f"Account Name  : {acct['AcctName']}");
         
-    return accts
+    return acct
 
 # for the execution of this script only
 if __name__ == "__main__":
-    logger.debug(f"Calling all_subaccounts() ...")
-      
-    all_subaccounts = get_all_subaccounts()
+    from waca_get_all_subaccounts import get_all_subaccounts 
+    import random
 
-    logger.debug(f"all_subaccounts() completed.")  
+    acctNum = 0 # initial ID in case no subaccount exist   
+
+    all_subaccounts = get_all_subaccounts()     # get all sub-accounts information (list)
+    logger.debug(f"all_subaccounts = {all_subaccounts}.")
+    logger.debug(f"all_subaccounts type is {type(all_subaccounts)}.")
+    
+    num_subaccounts = len(all_subaccounts)      # registered sub-account number
+
+    if num_subaccounts == 0:
+        logger.info(f"The call for get_a_specific_subaccount() will fail as there is no subaccount created.")        
+    else:
+        idx =  random.randrange(0, num_subaccounts) # select index of the existing sub-account information
+        acctNum = all_subaccounts[idx]["AcctNum"]
+    
+    logger.debug(f"Calling get_a_specific_subaccount() ...")
+    logger.debug(f"Target sub-account AcctNum = {acctNum}")
+
+    a_subaccount = get_a_specific_subaccount(acctNum)
+
+    logger.debug(f"get_a_specific_subaccount() completed.")  
 
     ## return value 
-    logger.info(f"{all_subaccounts}");  
-    logger.debug(f"{type(all_subaccounts)}");  
+    logger.debug(f"{a_subaccount}");  
+    logger.debug(f"{type(a_subaccount)}");  

@@ -51,12 +51,15 @@ logger.debug(f"Current Logging Level is {level}")
 # -----------------------------------------------
 
 ############################################################################# 
-# Create a subaccount
+# Create a sub-account
 # -----------------------------------------
 # Create a new sub-account that is linked to the Control Account (as authenticated via the API Key).
 # Additionally, a new root user for the account will be created.
 # =========================================
-# Input paramater
+# ******************* 
+#  Parameters
+# *******************
+# Input parameter
 # dict 
 # {
 #   "AcctName": "",                             # string    (MANDATORY: email address)
@@ -70,9 +73,6 @@ logger.debug(f"Current Logging Level is {level}")
 #   "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
 #   "AllowAccountDelete": True,                 # Boolean   default: True
 # }
-# ******************* 
-#  Parameters
-# *******************
 # AcctName is email address for the subaccount to be created
 # IsTrial, if set to "True," will indicate the sub-account should be created as a trial account.
 # Password specifies the password for the new root user for the account and must pass the password complexity rules.
