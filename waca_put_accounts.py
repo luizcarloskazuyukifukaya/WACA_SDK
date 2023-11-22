@@ -38,9 +38,6 @@ logger = logging.getLogger(__name__)
 # logger.info("This is a info log.")
 # logger.warning("This is a warning log.")
 
-# WACA Global variables
-import waca_global as g
-
 # Set loggin(g level
 logger.setLevel(g.GBL_WACA_LOG_LEVEL)
 level = logger.level
