@@ -74,6 +74,7 @@ def get_all_subaccounts():
     logger.info(f"Target URL is {url}")
 
     ## GET request
+    ## requests.get(url, params={key: value}, args)
     r = requests.get( url, headers=api_head);
 
     ## Response status code

@@ -118,10 +118,11 @@ logger.debug(f"Current Logging Level is {level}")
 ############################################################################# 
 def create_subaccount(**acctInfo):
     # acct is defined with all required keys and default value
+    WACA_DEFAULt_PASSWORD = "Wasabisys"             # WACA Sub-account default password (must be greater than 8)
     acct = {
         "AcctName": "",                             # string    (MANDATORY: email address)
         "IsTrial": True,                            # Boolean   default: True
-        "Password": "Wasabi",                       # string    default: "Wasabi"
+        "Password": WACA_DEFAULt_PASSWORD,          # string    default: WACA_DEFAULT_PASSWORD
         "NumTrial": 30,                             # int       default: 30
         "QuotaGB": 1,                               # int       default: 1 GB
         "PasswordResetRequired": True,              # Boolean   default: True
@@ -168,7 +169,8 @@ def create_subaccount(**acctInfo):
         #############
     return account
 
-
+# put_accounts
+# Call WACA REST directly here
 def put_accounts(acct):    
     # read WACA config file (~/.wasabi/waca.conf)
     api_conf = parse_conf()
@@ -189,7 +191,85 @@ def put_accounts(acct):
     logger.debug(f"PUT {url}")
     logger.info(f"Target URL is {url}")
 
-    newAcct = {
+    # HTTPS PUT
+    # data = acct
+    # acct is confirmed to have all keys and values required to create the sub-account    
+    logger.debug(f"HTTPS PUT Request start from here .............. ")
+    logger.debug(f"URL =  {url}")
+    logger.debug(f"headers =  {api_head}")
+    logger.debug(f"data =  {acct}")
+
+    ## PUT request
+    ## requests.put(url, params={key: value}, args)
+    r = requests.put( url, headers=api_head, json=acct);
+
+    ## Response status code
+    logger.info(f"status: {r.status_code}") ; 
+
+    ## Response JSON
+    logger.debug(f"{r.json()}");  
+    logger.debug(f"{type(r.json())}");  
+ 
+    #print(f"{r.json()}");  
+    #print(f"{type(r.json())}");  
+    ## Sub-Accounts Information
+    newCreatedAcct = {} # default NULL
+    if r.status_code == 200:
+        newCreatedAcct = r.json()
+        logger.debug("===================================================================================");
+        logger.debug(newCreatedAcct);
+        logger.debug("-----------------------------------------------------------------------------------");
+        logger.debug(f"Account Number: {newCreatedAcct['AcctNum']}");
+        logger.debug(f"Account Name  : {newCreatedAcct['AcctName']}");
+    return newCreatedAcct
+
+# ****************************************************************
+# randomname for generate random string for email address creation
+# only for development and test purpose 
+
+import random, string
+
+def randomname(n):
+   randlst = [random.choice(string.ascii_letters + string.digits) for i in range(n)]
+   return ''.join(randlst).lower()
+
+
+# for the execution of this script only
+if __name__ == "__main__":
+
+    EMAIL_DOMAIN_NAME = "@wacawasabi.com"    
+    
+    param = {
+        "AcctName": "",                              # string    (MANDATORY: email address)
+#        "IsTrial": True,                            # Boolean   default: True
+#        "Password": "@@@@@@@@@@@",                   # string    default: "Wasabi"
+#        "NumTrial": 30,                             # int       default: 30
+        "QuotaGB": 10,                               # int       default: 1 GB
+        "PasswordResetRequired": False,              # Boolean   default: True
+#        "EnableFTP": True,                          # Boolean   default: True
+#        "Inactive": False,                          # Boolean   default: False
+#        "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
+#        "AllowAccountDelete": True,                 # Boolean   default: True
+        }
+
+    param["AcctName"] = randomname(24) + EMAIL_DOMAIN_NAME
+    logger.debug(f"Sub-account AcctName = {param['AcctName']}")  
+    
+    logger.debug(f"Calling create_subaccount() ...")
+      
+    new_subaccount = create_subaccount(**param)
+
+    logger.debug(f"create_subaccount() completed.")  
+
+    ## return value 
+    logger.debug(f"{new_subaccount}");  
+    logger.debug(f"{type(new_subaccount)}");  
+
+
+'''
+    ONLY USED FOR DEBUG (TO BE DELETED)
+    
+    debugRespAcct = {
         "AcctName": "9d0a2872855afca3c11fe46e9a4018e2@wasabi.com",
         "AcctNum": 124,
         "AccessKey": "Z1JI27OQ75B00OLDLYMP",
@@ -201,69 +281,14 @@ def put_accounts(acct):
         "Inactive": False,
     }
 
-    keyList = list(newAcct.keys())
+    keyList = list(debugRespAcct.keys())
     for key in keyList:
         logger.debug(f"{key} is being updated")
         if key in acct:
             # found matching parameter
             logger.debug(f"Matching parameter : {key} = {acct[key]}")
             # acct corresponding key's value is overwritten by the given parameter key's value
-            newAcct[key] = acct[key]   
+            debugRespAcct[key] = acct[key]   
 
-    # HTTPS PUT
-    #
-    #
-    #
-    return newAcct
-"""     
-    ## PUT request
-    r = requests.get( url, headers=api_head);
-
-    ## Response status code
-    logger.info(f"status: {r.status_code}") ; 
-
-    ## Response JSON
-    logger.debug(f"{r.json()}");  
-    logger.debug(f"{type(r.json())}");  
- 
-    #print(f"{r.json()}");  
-    #print(f"{type(r.json())}");  
-
-    ## Sub-Accounts Information
-    for acct in r.json():
-        logger.debug("===================================================================================");
-        logger.debug(acct);
-        logger.debug("-----------------------------------------------------------------------------------");
-        logger.debug(f"Account Number: {acct['AcctNum']}");
-        logger.debug(f"Account Name  : {acct['AcctName']}");
-        
-    return r.json
- """
-
-
-
-# for the execution of this script only
-if __name__ == "__main__":
-
-    param = {
-        "AcctName": "dummyaccount@dummydomain.ai",   # string    (MANDATORY: email address)
-#        "IsTrial": True,                            # Boolean   default: True
-        "Password": "@@@@@@@@@@@",                   # string    default: "Wasabi"
-#        "NumTrial": 30,                             # int       default: 30
-        "QuotaGB": 100,                              # int       default: 1 GB
-#        "PasswordResetRequired": True,              # Boolean   default: True
-#        "EnableFTP": True,                          # Boolean   default: True
-#        "Inactive": False,                          # Boolean   default: False
-#        "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
-#        "AllowAccountDelete": True,                 # Boolean   default: True
-        }
-
-    logger.debug(f"Calling create_subaccount() ...")
-      
-    new_subaccount = create_subaccount(**param)
-
-    logger.debug(f"create_subaccount() completed.")  
-
-    ## return value 
-    logger.debug(f"{new_subaccount}");  
-    logger.debug(f"{type(new_subaccount)}");  
+    ONLY USED FOR DEBUG (TO BE DELETED)
+'''
