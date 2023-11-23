@@ -110,7 +110,7 @@ def get_a_specific_subaccount(acctNum):
     ## Response JSON
     logger.debug(f"{r.json()}");  
     logger.debug(f"{type(r.json())}");  
- 
+
     #print(f"{r.json()}");  
     #print(f"{type(r.json())}");  
 

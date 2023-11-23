@@ -118,9 +118,9 @@ def delete_subaccount(acctNum):
     logger.debug("-----------------------------------------------------------------------------------");
     logger.info(f"Msg: {msg['Msg']}");
     if r.status_code == 200:
-        logger.info("Sub-Account AcctNum {acctNum} deleted.")        
+        logger.info(f"Sub-Account AcctNum {acctNum} deleted.")        
     else:
-        logger.error("Failed to delete Sub-Account AcctNum {acctNum}.")        
+        logger.error(f"Failed to delete Sub-Account AcctNum {acctNum}.")        
 
     return msg
 
