@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # logger.info("This is a info log.")
 # logger.warning("This is a warning log.")
 
-# Set loggin(g level
+# Set logging level
 logger.setLevel(g.GBL_WACA_LOG_LEVEL)
 level = logger.level
 logger.debug(f"Current Logging Level is {level}")
@@ -126,7 +126,8 @@ def get_a_specific_subaccount(acctNum):
     return acct
 
 # for the execution of this script only
-if __name__ == "__main__":
+# for the execution of this script only
+def main():
     from waca_get_all_subaccounts import get_all_subaccounts 
     import random
 
@@ -154,3 +155,6 @@ if __name__ == "__main__":
     ## return value 
     logger.debug(f"{a_subaccount}");  
     logger.debug(f"{type(a_subaccount)}");  
+
+if __name__ == "__main__":
+    main()

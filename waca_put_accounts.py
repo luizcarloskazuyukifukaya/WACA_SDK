@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # logger.info("This is a info log.")
 # logger.warning("This is a warning log.")
 
-# Set loggin(g level
+# Set logging level
 logger.setLevel(g.GBL_WACA_LOG_LEVEL)
 level = logger.level
 logger.debug(f"Current Logging Level is {level}")
@@ -198,6 +198,8 @@ def put_accounts(acct):
 
     ## PUT request
     ## requests.put(url, params={key: value}, args)
+    ## requests.put( url, headers=api_head, data=acct);
+    # ********* requests.put only works with 'json=acct' *************
     r = requests.put( url, headers=api_head, json=acct);
 
     ## Response status code
@@ -232,7 +234,7 @@ def randomname(n):
 
 
 # for the execution of this script only
-if __name__ == "__main__":
+def main():
 
     EMAIL_DOMAIN_NAME = "@wacawasabi.com"    
     
@@ -262,7 +264,6 @@ if __name__ == "__main__":
     logger.debug(f"{new_subaccount}");  
     logger.debug(f"{type(new_subaccount)}");  
 
-
 '''
     ONLY USED FOR DEBUG (TO BE DELETED)
     
@@ -289,3 +290,5 @@ if __name__ == "__main__":
 
     ONLY USED FOR DEBUG (TO BE DELETED)
 '''
+if __name__ == "__main__":
+    main()

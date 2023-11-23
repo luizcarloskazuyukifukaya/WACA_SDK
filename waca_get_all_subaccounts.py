@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 # logger.info("This is a info log.")
 # logger.warning("This is a warning log.")
 
-# Set loggin(g level
+# Set logging level
 logger.setLevel(g.GBL_WACA_LOG_LEVEL)
 level = logger.level
 logger.debug(f"Current Logging Level is {level}")
@@ -99,7 +99,7 @@ def get_all_subaccounts():
     return accts
 
 # for the execution of this script only
-if __name__ == "__main__":
+def main():
     logger.debug(f"Calling all_subaccounts() ...")
       
     all_subaccounts = get_all_subaccounts()
@@ -109,3 +109,6 @@ if __name__ == "__main__":
     ## return value 
     logger.info(f"{all_subaccounts}");  
     logger.debug(f"{type(all_subaccounts)}");  
+
+if __name__ == "__main__":
+    main()
