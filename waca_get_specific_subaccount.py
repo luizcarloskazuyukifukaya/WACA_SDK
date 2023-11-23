@@ -96,7 +96,8 @@ def get_a_specific_subaccount(acctNum):
         'Authorization':api_key_value
     }
 
-    url = url + '/v1/accounts' + '/' + str(acctNum)
+    url = "{}/v1/accounts/{}".format(url, acctNum)
+
     logger.info(f"Target URL is {url}")
 
     ## GET request

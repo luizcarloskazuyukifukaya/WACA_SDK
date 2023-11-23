@@ -188,7 +188,8 @@ def put_accounts(acct):
     # X-Wasabi-Service: partner
 
     #PUT /v1/accounts
-    url = url + '/v1/accounts'
+    url = "{}/v1/accounts".format(url)
+
     logger.debug(f"PUT {url}")
     logger.info(f"Target URL is {url}")
 

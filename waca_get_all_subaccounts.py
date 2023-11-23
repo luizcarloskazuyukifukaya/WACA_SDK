@@ -67,7 +67,8 @@ def get_all_subaccounts():
         'Authorization':api_key_value
     }
 
-    url = url + '/v1/accounts'
+    url = "{}/v1/accounts".format(url)
+
     logger.info(f"Target URL is {url}")
 
     ## GET request

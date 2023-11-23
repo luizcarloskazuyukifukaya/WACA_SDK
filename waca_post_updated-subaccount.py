@@ -223,7 +223,8 @@ def post_account(acctNum, acct):
     # X-Wasabi-Service: partner
 
     #POST /v1/accounts/134
-    url = url + '/v1/accounts' + '/' + str(acctNum)
+    url = "{}/v1/accounts/{}".format(url, acctNum)
+
     logger.debug(f"POST {url}")
     logger.info(f"Target URL is {url}")
 
