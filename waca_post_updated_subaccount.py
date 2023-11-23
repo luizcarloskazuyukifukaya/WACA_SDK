@@ -6,6 +6,7 @@
 
 # WACA API Authentication Python Code Sample
 import requests
+import json
 
 # WACA Configuration file related
 # This is to use the followings as kind of global variable:
@@ -43,6 +44,8 @@ logger.setLevel(g.GBL_WACA_LOG_LEVEL)
 level = logger.level
 logger.debug(f"Current Logging Level is {level}")
 
+import random
+
 ## WACA API specific URL
 # -----------------------------------------------
 # PUT Accounts
@@ -66,7 +69,7 @@ logger.debug(f"Current Logging Level is {level}")
 #   "AcctNum": 0,                               # int (MANDATORY)
 #   "AcctName": "",                             # string    
 #   "Password": "",                             # string
-#   "NumTrial Days": 30,                        # int       
+#   "NumTrailDays": 30,                        # int       
 #   "QuotaGB": 1,                               # int
 #   "ConvertToPaid", False                      # Boolean
 #   "ResetAccessKeys", False                    # Boolean
@@ -79,7 +82,7 @@ logger.debug(f"Current Logging Level is {level}")
 # }
 # AcctName, if specified, change the root user's email address
 # Password, if this will change the root user’s password provided that it passes the password complexity policies.
-# NumTrial Days, if specified, this will change the number of days associated with the trial period, up to a limit set on the Control Account.
+# NumTrailDays, if specified, this will change the number of days associated with the trial period, up to a limit set on the Control Account.
 # QuotaGB, if specified, this will change the trial period storage quota, up to a limit set on the Control Account.
 # ConvertToPaid, if is set to “true,” this will transition the sub-account to a full (paid) account.
 # ResetAccessKeys, if is set to “true,” all previous access keys on the sub-account are invalidated and a new Access Key to the root user account on the sub-account is generated.
@@ -131,7 +134,7 @@ def update_subaccount(**acctInfo):
         "AcctNum": type(0),                             # int (MANDATORY)
         "AcctName": type("string"),                     # string    
         "Password": type("string"),                     # string                                   
-        "NumTrial Days": type(30),                      # int
+        "NumTrailDays": type(30),                      # int
         "QuotaGB": type(1),                             # int
         "ConvertToPaid": type(False),                   # Boolean
         "ResetAccessKeys": type(False),                 # Boolean
@@ -143,6 +146,7 @@ def update_subaccount(**acctInfo):
         "DisableMFA": type(False),                      # Boolean        
     }
     
+    logger.debug(f"Starting update_subaccount ....")
     logger.debug(f"{acctInfo}")
 
     # return account dict
@@ -195,6 +199,7 @@ def update_subaccount(**acctInfo):
         account = post_account(id, acct)
         logger.debug(f"post_account() called")
 
+    logger.debug(f"update_subaccount completed.")
     return account            
         
 # post_account
@@ -215,14 +220,14 @@ def post_account(acctNum, acct):
     ## Request Header with API Key Authentication
     api_head = {
         'Authorization':api_key_value,
-#        'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
         'X-Wasabi-Service': 'partner',
     }
     # "Content-Type: application/json; charset=utf-8" # request( ,json=data )
     # Content-Type: application/json
     # X-Wasabi-Service: partner
 
-    #POST /v1/accounts/134
+    #POST /v1/accounts/<AcctNum>
     url = "{}/v1/accounts/{}".format(url, acctNum)
 
     logger.debug(f"POST {url}")
@@ -241,12 +246,21 @@ def post_account(acctNum, acct):
 
     # This cause Internal Server Error json=acct
     # Response code: 500    
-    r = requests.post( url, headers=api_head, json=acct);
+    #r = requests.post( url, headers=api_head, json=json.dumps(acct))
      
     # ********* requests.post only works with 'data=acct' *************
     # Response code: 403
     # You are not permitted to complete that action
-    #r = requests.post( url, headers=api_head, data=acct);
+    # Response code: 400
+    # Bad Request
+    #r = requests.post( url, headers=api_head, data=acct)
+
+    # json in Dictionary (Works)
+    #r = requests.post( url, headers=api_head, json=acct)
+
+    # JSON format data (Works)
+    logger.debug(f"data JSON =  {json.dumps(acct)}")
+    r = requests.post( url, headers=api_head, data=json.dumps(acct))
 
     ## Response status code
     logger.info(f"status: {r.status_code}") ; 
@@ -277,10 +291,10 @@ def create_dummy_subaccount():
     EMAIL_DOMAIN_NAME = "@postwacawasabi.com"    
     
     param = {
-        "AcctName": "",                              # string    (MANDATORY: email address)
+#        "AcctName": "",                              # string    (MANDATORY: email address)
 #        "IsTrial": True,                            # Boolean   default: True
 #        "Password": "@@@@@@@@@@@",                  # string    default: "Wasabisys"
-#        "NumTrial Day": 30,                         # int       default: 30
+#        "NumTrailDay": 30,                         # int       default: 30
         "QuotaGB": 10,                               # int       default: 1 GB
         "PasswordResetRequired": False,              # Boolean   default: True
 #        "EnableFTP": True,                          # Boolean   default: True
@@ -307,21 +321,47 @@ def create_dummy_subaccount():
     id = new_subaccount['AcctNum']
     return id
 
+# get a ramdom acctNum from the existing sub-accounts
+def get_ramdom_subaccount():
+    from waca_get_all_subaccounts import get_all_subaccounts 
+
+    acctNum = 0 # initial ID in case no subaccount exist   
+
+    all_subaccounts = get_all_subaccounts()     # get all sub-accounts information (list)
+    #logger.debug(f"all_subaccounts = {all_subaccounts}.")
+    #logger.debug(f"all_subaccounts type is {type(all_subaccounts)}.")
+    
+    num_subaccounts = len(all_subaccounts)      # registered sub-account number
+
+    if num_subaccounts == 0:
+        logger.info(f"The call for get_a_specific_subaccount() will fail as there is no subaccount created.")        
+    else:
+        idx =  random.randrange(0, num_subaccounts) # select index of the existing sub-account information
+        acctNum = all_subaccounts[idx]["AcctNum"]
+    
+    logger.debug(f"Calling get_a_specific_subaccount() ...")
+    logger.info(f"Target sub-account AcctNum = {acctNum}")
+
+    logger.debug(f"get_ramdom_subaccount() completed.")  
+    return acctNum
 
 # for the execution of this script only
 # this is only for the test of the updated_subaccount()
 # delete the dummy sub-account created for the test
 def delete_dummy_subaccount(id):
+    from waca_delete_subaccount import delete_subaccount
+
     logger.debug(f"deleting sub-account AcctNum : {id}");  
 
-    # to be added when the delete_subaccount is created
-
+    # delete subaccount created
+    delete_subaccount(id)
+    
     logger.debug(f"deleted");  
 
 
 
 # for the execution of this script only
-def main():
+def create_update_delete():
     import time
 
     from waca_put_accounts import randomname
@@ -329,24 +369,75 @@ def main():
     NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
 
     # create dummy subaccount
-    #id = create_dummy_subaccount()
-    #logger.debug(f"Waiting for WACM to complete account creation : {id}");
-    #time.sleep(10)
-    #logger.debug(f"Resuming test ...");
+    id = create_dummy_subaccount()
+    logger.debug(f"Waiting for WACM to complete account creation : {id}");
+    time.sleep(60)      
+    # It cause Server Internal Error if the update_subaccount is called in short time after creation
+    logger.debug(f"Resuming test ...");
     # Use static AcctNum 1058395, 1058394, 1059642
-    id =  1058394
+    #id =  1058394
 
-    param = {}
+    # Instead of creating new subaccount, let's get from existing one
+    #id = get_ramdom_subaccount()
+    #logger.info(f"Target AcctNum for update is {id}");
+
+    updateParam = generate_dummy_update_param()
 
     # specify the target id (the new created subaccount)
-    param['AcctNum'] = id
+    updateParam['AcctNum'] = id
+    logger.info(f"Target sub-account to be updated AcctNum is {id}.")
+    
+    logger.debug(f"Calling update_subaccount() ...")
+    
+    updated_subaccount = update_subaccount(**updateParam)
+
+    logger.debug(f"update_subaccount() called.")  
+
+    ## Updated sub-account 
+    logger.info(f"{updated_subaccount}");  
+    logger.debug(f"{type(updated_subaccount)}");  
+
+    delete_dummy_subaccount(id)
+    
+    logger.info(f"updated_subaccount test completed.");  
+
+# 
+def update_existing():
+    import time
+
+    # Instead of creating new subaccount, let's get from existing one
+    id = get_ramdom_subaccount()
+    logger.info(f"Target AcctNum for update is {id}");
+
+    updateParam = generate_dummy_update_param()
+
+    # specify the target id (the new created subaccount)
+    updateParam['AcctNum'] = id
     logger.info(f"Target sub-account to be updated AcctNum is {id}.")
 
+    logger.debug(f"Calling update_subaccount() ...")
+    
+    updated_subaccount = update_subaccount(**updateParam)
+
+    logger.debug(f"update_subaccount() called.")  
+
+    ## Updated sub-account 
+    logger.info(f"{updated_subaccount}");  
+    logger.debug(f"{type(updated_subaccount)}");  
+    
+    logger.info(f"updated_subaccount test completed.");  
+
+def generate_dummy_update_param():
+    from waca_put_accounts import randomname
+
+    NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
+
+    param = {}
     # Specify the account information to be updated here 
     #    {
     #        "AcctName": type("string"),                     # string (Mandatory)   
     #        "Password": type("string"),                     # string                                   
-    #        "NumTrial Days": type(30),                      # int
+    #        "NumTrailDays": type(30),                      # int
     #        "QuotaGB": type(1),                             # int
     #        "ConvertToPaid": type(False),                   # Boolean
     #        "ResetAccessKeys": type(False),                 # Boolean
@@ -358,25 +449,63 @@ def main():
     #        "DisableMFA": type(False),                      # Boolean        
     #    }
 
+    # placeholder (to be in the first order)
+    param['AcctNum'] = 0
     # New updated AcctName 
-    param["AcctName"] = randomname(24) + NEW_EMAIL_DOMAIN_NAME
-    logger.debug(f"New Updated Sub-account AcctName = {param['AcctName']}")  
-    
-    logger.debug(f"Calling update_subaccount() ...")
-    
-    updated_subaccount = update_subaccount(**param)
+    #key = "AcctName"
+    #param[key] = randomname(24) + NEW_EMAIL_DOMAIN_NAME
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")  
+    # New updated Password
+    #key = "Password"
+    #param[key] = randomname(12)
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated NumTrailDays
+    key = "NumTrailDays"
+    param[key] = random.randrange(1, 90, 5) # from 10 to 90, 5 days step
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated QuotaGB
+    #key = "QuotaGB"
+    #param[key] = random.randrange(20, 1000, 50) # from 10 to 1000, 50 GB step
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated ConvertToPaid
+    #key = "ConvertToPaid"
+    #param[key] = random.choice([True, False])
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated ResetAccessKeys
+    #key = "ResetAccessKeys"
+    #param[key] = random.choice([True, False])
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated PasswordResetRequired
+    #key = "PasswordResetRequired"
+    #param[key] = random.choice([True, False])
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated EnableFTP
+    key = "EnableFTP"
+    param[key] = random.choice([True, False])
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated Inactive
+    #key = "Inactive"
+    #param[key] = random.choice([True, False])
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated SendPasswordSetToSubAccountEmail
+    #key = "SendPasswordSetToSubAccountEmail"
+    #param[key] = random.choice([True, False])
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated AllowAccountDelete
+    #key = "AllowAccountDelete"
+    #param[key] = random.choice([True, False])
+    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    # New updated DisableMFA
+    key = "DisableMFA"
+    param[key] = random.choice([True, False])
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
 
-    logger.debug(f"create_subaccount() completed.")  
-
-    ## Updated sub-account 
-    logger.info(f"{updated_subaccount}");  
-    logger.debug(f"{type(updated_subaccount)}");  
-
-    delete_dummy_subaccount(id)
-    
-    logger.info(f"updated_subaccount test completed.");  
+    return param
 
 
+def main():
+    #create_update_delete()
+    update_existing()
 
 if __name__ == "__main__":
     main()

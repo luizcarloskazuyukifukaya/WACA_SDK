@@ -6,6 +6,7 @@
 
 # WACA API Authentication Python Code Sample
 import requests
+import json
 
 # WACA Configuration file related
 # This is to use the followings as kind of global variable:
@@ -65,7 +66,7 @@ logger.debug(f"Current Logging Level is {level}")
 #   "AcctName": "",                             # string    (MANDATORY: email address)
 #   "IsTrial": True,                            # Boolean   default: True
 #   "Password": "",                             # string    default: "Wasabi"
-#   "NumTrial Day": 30,                         # int       default: 30
+#   "NumTrailDay": 30,                         # int       default: 30
 #   "QuotaGB": 1,                               # int       default: 1 GB
 #   "PasswordResetRequired": True,              # Boolean   default: True
 #   "EnableFTP": True,                          # Boolean   default: True
@@ -76,7 +77,7 @@ logger.debug(f"Current Logging Level is {level}")
 # AcctName is email address for the subaccount to be created
 # IsTrial, if set to "True," will indicate the sub-account should be created as a trial account.
 # Password specifies the password for the new root user for the account and must pass the password complexity rules.
-# NumTrial Day specifies the number of days for which the trial should be valid before automatically being converted to a paying account. If NumTrialDays is omitted, the default that is established for the Control Account will be used.
+# NumTrailDay specifies the number of days for which the trial should be valid before automatically being converted to a paying account. If NumTrialDays is omitted, the default that is established for the Control Account will be used.
 # QuotaGB will specify the quota (in GB) to which the new sub-account will be limited during the trial phase and, if omitted, will be the default associated with the Control Account.
 # PasswordResetRequired will mark a newly provisioned sub-account password as temporary. The user will be prompted to change the password during the first login.
 # EnableFTP will enable FTP/FTPS access to a sub-account.
@@ -120,7 +121,7 @@ def create_subaccount(**acctInfo):
         "AcctName": "",                             # string    (MANDATORY: email address)
         "IsTrial": True,                            # Boolean   default: True
         "Password": WACA_DEFAULt_PASSWORD,          # string    default: WACA_DEFAULT_PASSWORD
-        "NumTrial Day": 30,                         # int       default: 30
+        "NumTrailDay": 30,                         # int       default: 30
         "QuotaGB": 1,                               # int       default: 1 GB
         "PasswordResetRequired": True,              # Boolean   default: True
         "EnableFTP": True,                          # Boolean   default: True
@@ -180,7 +181,8 @@ def put_accounts(acct):
 
     ## Request Header with API Key Authentication
     api_head = {
-        'Authorization':api_key_value,
+        'Authorization': api_key_value,
+        'Content-Type': 'application/json',
         'X-Wasabi-Service': 'partner',
     }
     # "Content-Type: application/json; charset=utf-8" # request( ,json=data )
@@ -205,7 +207,12 @@ def put_accounts(acct):
     ## requests.put(url, params={key: value}, args)
     ## requests.put( url, headers=api_head, data=acct);
     # ********* requests.put only works with 'json=acct' *************
-    r = requests.put( url, headers=api_head, json=acct);
+
+    # ********** THIS WORKS ALSO *************************************
+    #r = requests.put( url, headers=api_head, json=acct);
+
+    logger.debug(f"data JSON =  {json.dumps(acct)}")
+    r = requests.put( url, headers=api_head, data=json.dumps(acct))
 
     ## Response status code
     logger.info(f"status: {r.status_code}") ; 
@@ -247,11 +254,11 @@ def main():
         "AcctName": "",                              # string    (MANDATORY: email address)
 #        "IsTrial": True,                            # Boolean   default: True
 #        "Password": "@@@@@@@@@@@",                  # string    default: "Wasabi"
-#        "NumTrial Day": 30,                         # int       default: 30
+#        "NumTrailDay": 30,                         # int       default: 30
         "QuotaGB": 10,                               # int       default: 1 GB
         "PasswordResetRequired": False,              # Boolean   default: True
-#        "EnableFTP": True,                          # Boolean   default: True
-#        "Inactive": False,                          # Boolean   default: False
+        "EnableFTP": True,                          # Boolean   default: True
+        "Inactive": False,                          # Boolean   default: False
 #        "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
 #        "AllowAccountDelete": True,                 # Boolean   default: True
         }
