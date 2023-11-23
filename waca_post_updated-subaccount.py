@@ -46,15 +46,16 @@ logger.debug(f"Current Logging Level is {level}")
 ## WACA API specific URL
 # -----------------------------------------------
 # PUT Accounts
-# https://docs.wasabi.com/docs/put-accounts
-# PUT /v1/accounts
+# https://docs.wasabi.com/docs/post-an-updated-sub-account
+# POST /v1/accounts/<AcctNum>
 # -----------------------------------------------
 
 ############################################################################# 
-# Create a sub-account
+# Update the sub-account information.
 # -----------------------------------------
-# Create a new sub-account that is linked to the Control Account (as authenticated via the API Key).
-# Additionally, a new root user for the account will be created.
+# <AcctNum> is the target sub-account ID.
+# This function will update the sub-account information 
+# and return the updated sub-account information as a dictionary
 # =========================================
 # ******************* 
 #  Parameters
@@ -62,41 +63,50 @@ logger.debug(f"Current Logging Level is {level}")
 # Input parameter
 # dict 
 # {
-#   "AcctName": "",                             # string    (MANDATORY: email address)
-#   "IsTrial": True,                            # Boolean   default: True
-#   "Password": "",                             # string    default: "Wasabi"
-#   "NumTrial": 30,                             # int       default: 30
-#   "QuotaGB": 1,                               # int       default: 1 GB
-#   "PasswordResetRequired": True,              # Boolean   default: True
-#   "EnableFTP": True,                          # Boolean   default: True
-#   "Inactive": False,                          # Boolean   default: False
-#   "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
-#   "AllowAccountDelete": True,                 # Boolean   default: True
+#   "AcctNum": 0,                               # int (MANDATORY)
+#   "AcctName": "",                             # string    
+#   "Password": "",                             # string
+#   "NumTrial Days": 30,                        # int       
+#   "QuotaGB": 1,                               # int
+#   "ConvertToPaid", False                      # Boolean
+#   "ResetAccessKeys", False                    # Boolean
+#   "PasswordResetRequired": True,              # Boolean
+#   "EnableFTP": True,                          # Boolean
+#   "Inactive": False,                          # Boolean
+#   "SendPasswordSetToSubAccountEmail": True,   # Boolean
+#   "AllowAccountDelete": True,                 # Boolean
+#   "DisableMFA": False,                        # Boolean
 # }
-# AcctName is email address for the subaccount to be created
-# IsTrial, if set to "True," will indicate the sub-account should be created as a trial account.
-# Password specifies the password for the new root user for the account and must pass the password complexity rules.
-# NumTrial Day specifies the number of days for which the trial should be valid before automatically being converted to a paying account. If NumTrialDays is omitted, the default that is established for the Control Account will be used.
-# QuotaGB will specify the quota (in GB) to which the new sub-account will be limited during the trial phase and, if omitted, will be the default associated with the Control Account.
-# PasswordResetRequired will mark a newly provisioned sub-account password as temporary. The user will be prompted to change the password during the first login.
-# EnableFTP will enable FTP/FTPS access to a sub-account.
-# Inactive will set the sub-account as inactive. If Inactive is set to “False,” the sub-account will be updated as active.
-# SendPasswordResetToSubAccountEmail, if set to “True,” will send an email of password reset, password changed, password expiring, or password has expired to the sub-account. Otherwise, the Control Account receives the email.
-# If AllowAccountDelete is set to “False,” a sub-account is not able to see the Delete Account section in the Wasabi Management Console. If it is “true,” the Delete Account section is visible.
+# AcctName, if specified, change the root user's email address
+# Password, if this will change the root user’s password provided that it passes the password complexity policies.
+# NumTrial Days, if specified, this will change the number of days associated with the trial period, up to a limit set on the Control Account.
+# QuotaGB, if specified, this will change the trial period storage quota, up to a limit set on the Control Account.
+# ConvertToPaid, if is set to “true,” this will transition the sub-account to a full (paid) account.
+# ResetAccessKeys, if is set to “true,” all previous access keys on the sub-account are invalidated and a new Access Key to the root user account on the sub-account is generated.
+# PasswordResetRequired, if is set to “true,” a newly provisioned sub-account password is temporary.
+# EnableFTP, if is set to “true,” FTP/FTPS access to a sub-account will be enabled.
+# Inactive, if is set to “true,” the account will be set as inactive. 
+# SendPasswordSetToSubAccountEmail, if set to “true,” will send an email of password reset, password changed, password expiring, or password has expired to the sub-account.
+# AllowAccountDelete, if is set to “false,” a sub-account is not able to see the Delete Account section in the Wasabi Management Console.
+# DisableMFA, if is set to “true,” MFA will be deactivated in a sub-account.
 # ******************* 
 #  Return value
+# ** NOTE **
+# Is not necessary all key related to the sub-account, and could be less.
+# See the API example https://docs.wasabi.com/docs/post-an-updated-sub-account
 # *******************
 # SUCCESS
 # {
-#    "AcctName": "9d0a2872855afca3c11fe46e9a4018e2@wasabi.com",
-#    "AcctNum": 124,
+#    "AcctNum": 134,
+#    "AcctName": "second-f68241f15bfcf08c1e11877d617a7f93@wasabi.com",
 #    "AccessKey": "Z1JI27OQ75B00OLDLYMP",
 #    "SecretKey": "z69QahHLjvrSnuHKJOqVufzazv1VcVJpAITvJWjN",
+#    "CreateTime": "2018-02-07T19:49:49Z",
 #    "IsTrial": true,
-#    "TrialExpiry": "2018-03-09T00:00:00Z",
-#    "QuotaGB": 1024
-#    "FTPEnabled": true
-#    "Inactive": False
+#    "TrialExpiry": "2018-03-20T00:00:00Z",
+#    "QuotaGB": 512,
+#    "FTPEnabled": true,
+#    "Inactive": false
 # }
 # FAIL
 # {} # NULL (dictionary)
@@ -104,71 +114,95 @@ logger.debug(f"Current Logging Level is {level}")
 # =========================================
 # Example:
 #   acctInfo = {
-#       "AcctName": "subaccount1@x.poweredbywasabi.com",
-#       "IsTrial": True,
-#       "Password": "1234567890abcdefg",
-#       "QuotaGB": 10,
+#       "AcctName": "second-f68241f15bfcf08c1e11877d617a7f93@wasabi.com",
+#       "NumTrialDays": 45,
+#       "Password": "xyzzy123$$$",
+#       "QuotaGB": 512,
+#       "ResetAccessKeys": true,
+#       "EnableFTP": true
 #   }
-#   account = create_subaccount(**acctInfo)
-#   # account will be the information about the new created subaccount
+#   account = update_subaccount(**acctInfo)
+#   # account will be the information about the updated subaccount
 #
 ############################################################################# 
-def create_subaccount(**acctInfo):
-    # acct is defined with all required keys and default value
-    WACA_DEFAULt_PASSWORD = "Wasabisys"             # WACA Sub-account default password (must be greater than 8)
-    acct = {
-        "AcctName": "",                             # string    (MANDATORY: email address)
-        "IsTrial": True,                            # Boolean   default: True
-        "Password": WACA_DEFAULt_PASSWORD,          # string    default: WACA_DEFAULT_PASSWORD
-        "NumTrial": 30,                             # int       default: 30
-        "QuotaGB": 1,                               # int       default: 1 GB
-        "PasswordResetRequired": True,              # Boolean   default: True
-        "EnableFTP": True,                          # Boolean   default: True
-        "Inactive": False,                          # Boolean   default: False
-        "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
-        "AllowAccountDelete": True,                 # Boolean   default: True
-        }
+def update_subaccount(**acctInfo):
+    # acctParamInfo is defined with the parameter key name and value type expected
+    acctParamInfo = {
+        "AcctNum": type(0),                             # int (MANDATORY)
+        "AcctName": type("string"),                     # string    
+        "Password": type("string"),                     # string                                   
+        "NumTrial Days": type(30),                      # int
+        "QuotaGB": type(1),                             # int
+        "ConvertToPaid": type(False),                   # Boolean
+        "ResetAccessKeys": type(False),                 # Boolean
+        "PasswordResetRequired": type(True),            # Boolean
+        "EnableFTP": type(True),                        # Boolean
+        "Inactive": type(False),                        # Boolean
+        "SendPasswordSetToSubAccountEmail": type(True), # Boolean
+        "AllowAccountDelete": type(True),               # Boolean
+        "DisableMFA": type(False),                      # Boolean        
+    }
+    
+    logger.debug(f"{acctInfo}")
 
+    # return account dict
     account = {}
-    # check mandatory information required    
-    # acctInfo (dictionary)
-    # acctInfo['AcctName'] (Mandatory)
-    if "AcctName" in acctInfo:
-        acct["AcctName"] = acctInfo["AcctName"]
-    else:
-        # Missing mandatory parameters
-        return account
-            
-    # check if all given parameters are correct or not
-    hasUnknownParameter = False
+
+    # check if the acctInfo include valid key and its value matching the expected type
+    isAcctNumValid = False
+    isInputParamValid = True
     keyList = list(acctInfo.keys())
     for key in keyList:
-        logger.debug(f"{key} is passed as a parameter")
-        if key in acctInfo:
+        logger.debug(f"{key} is specified as the input parameter")
+        if key in acctParamInfo:
             # found matching parameter
-            logger.debug(f"Matching parameter : {key} = {acctInfo[key]}")
-            # acct corresponding key's value is overwritten by the given parameter key's value
-            acct[key] = acctInfo[key]
+            logger.debug(f"Matching parameter : {key} =  value type : {acctParamInfo[key]}")
+            logger.debug(f"Input parameter : {key} =  value type : {type(acctInfo[key])}")
+                        
+            # check the value type
+            if type(acctInfo[key]) is acctParamInfo[key]: # True
+                # check mandatory key "AcctNum"
+                if key == "AcctNum":
+                    isAcctNumValid = True
+                    logger.debug(f"Mandatory key {key} is found and valid.")
+                    
+                continue
+            else:
+                # value not matching expected type
+                logger.debug(f"Matching parameter : {key} =  value : {acctParamInfo[key]}")
+                isInputParamValid = False
+                break
         else:
-            # Unknown parameter found
-            logger.error(f"Wrong parameter is given.: {key} = {acctInfo[key]}")
-            hasUnknownParameter = True
-            break                        
+            logger.debug(f"{key} is not a valid as input parameter")
+            # Invalid key found
+            isInputParamValid = False
+            break
     
-    if hasUnknownParameter != True:
-        logger.debug(f" Input parameter : {acct}")
-        # Call put_accounts()    
-        account = put_accounts(acct)
-        logger.debug(f"put_accounts(acct) called")
-        #############
-        # dummy success return
-        #account = acct 
-        #############
-    return account
+    if isAcctNumValid == False:
+        logger.error(f"Mandatory AcctNum is either not provided or not valid.")
+    
+    # Only when the Input parameter is valid
+    if isInputParamValid == True:
+        logger.debug(f" Input parameter : {acctInfo}")
+        # get target AcctNum (id)
+        id = acctInfo['AcctNum']
 
-# put_accounts
+        # format input for post_account()
+        acct = acctInfo
+        acct.pop('AcctNum')
+
+        # Call put_accounts()    
+        account = post_account(id, acct)
+        logger.debug(f"post_account() called")
+
+    return account            
+        
+# post_account
+# post_account( id, acct)
+# id is the target account AcctNum
+# acct is the parameter required for the REST POST call (excluding AcctNum)
 # Call WACA REST directly here
-def put_accounts(acct):    
+def post_account(acctNum, acct):    
     # read WACA config file (~/.wasabi/waca.conf)
     api_conf = parse_conf()
 
@@ -180,27 +214,38 @@ def put_accounts(acct):
 
     ## Request Header with API Key Authentication
     api_head = {
-        'Authorization':api_key_value
+        'Authorization':api_key_value,
+#        'Content-Type': 'application/json',
+        'X-Wasabi-Service': 'partner',
     }
+    # "Content-Type: application/json; charset=utf-8" # request( ,json=data )
+    # Content-Type: application/json
+    # X-Wasabi-Service: partner
 
-    #PUT /v1/accounts
-    url = url + '/v1/accounts'
-    logger.debug(f"PUT {url}")
+    #POST /v1/accounts/134
+    url = url + '/v1/accounts' + '/' + str(acctNum)
+    logger.debug(f"POST {url}")
     logger.info(f"Target URL is {url}")
 
-    # HTTPS PUT
+    # HTTPS POST
     # data = acct
     # acct is confirmed to have all keys and values required to create the sub-account    
-    logger.debug(f"HTTPS PUT Request start from here .............. ")
+    logger.debug(f"HTTPS POST Request start from here .............. ")
     logger.debug(f"URL =  {url}")
     logger.debug(f"headers =  {api_head}")
     logger.debug(f"data =  {acct}")
 
     ## PUT request
-    ## requests.put(url, params={key: value}, args)
-    ## requests.put( url, headers=api_head, data=acct);
-    # ********* requests.put only works with 'json=acct' *************
-    r = requests.put( url, headers=api_head, json=acct);
+    ## requests.post(url, params={key: value}, args)
+
+    # This cause Internal Server Error json=acct
+    # Response code: 500    
+    r = requests.post( url, headers=api_head, json=acct);
+     
+    # ********* requests.post only works with 'data=acct' *************
+    # Response code: 403
+    # You are not permitted to complete that action
+    #r = requests.post( url, headers=api_head, data=acct);
 
     ## Response status code
     logger.info(f"status: {r.status_code}") ; 
@@ -222,27 +267,19 @@ def put_accounts(acct):
         logger.info(f"Account Name  : {newCreatedAcct['AcctName']}");
     return newCreatedAcct
 
-# ****************************************************************
-# randomname for generate random string for email address creation
-# only for development and test purpose 
-
-import random, string
-
-def randomname(n):
-   randlst = [random.choice(string.ascii_letters + string.digits) for i in range(n)]
-   return ''.join(randlst).lower()
-
-
 # for the execution of this script only
-def main():
-
-    EMAIL_DOMAIN_NAME = "@wacawasabi.com"    
+# this is only for the test of the updated_subaccount()
+def create_dummy_subaccount():
+    from waca_put_accounts import create_subaccount
+    from waca_put_accounts import randomname
+    
+    EMAIL_DOMAIN_NAME = "@postwacawasabi.com"    
     
     param = {
         "AcctName": "",                              # string    (MANDATORY: email address)
 #        "IsTrial": True,                            # Boolean   default: True
-#        "Password": "@@@@@@@@@@@",                   # string    default: "Wasabi"
-#        "NumTrial": 30,                             # int       default: 30
+#        "Password": "@@@@@@@@@@@",                  # string    default: "Wasabisys"
+#        "NumTrial Day": 30,                         # int       default: 30
         "QuotaGB": 10,                               # int       default: 1 GB
         "PasswordResetRequired": False,              # Boolean   default: True
 #        "EnableFTP": True,                          # Boolean   default: True
@@ -255,7 +292,7 @@ def main():
     logger.debug(f"Sub-account AcctName = {param['AcctName']}")  
     
     logger.debug(f"Calling create_subaccount() ...")
-      
+    
     new_subaccount = create_subaccount(**param)
 
     logger.debug(f"create_subaccount() completed.")  
@@ -264,31 +301,81 @@ def main():
     logger.debug(f"{new_subaccount}");  
     logger.debug(f"{type(new_subaccount)}");  
 
-'''
-    ONLY USED FOR DEBUG (TO BE DELETED)
+    #-----------------------------------------------------------
+    #-----------------------------------------------------------
+    id = new_subaccount['AcctNum']
+    return id
+
+
+# for the execution of this script only
+# this is only for the test of the updated_subaccount()
+# delete the dummy sub-account created for the test
+def delete_dummy_subaccount(id):
+    logger.debug(f"deleting sub-account AcctNum : {id}");  
+
+    # to be added when the delete_subaccount is created
+
+    logger.debug(f"deleted");  
+
+
+
+# for the execution of this script only
+def main():
+    import time
+
+    from waca_put_accounts import randomname
+
+    NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
+
+    # create dummy subaccount
+    #id = create_dummy_subaccount()
+    #logger.debug(f"Waiting for WACM to complete account creation : {id}");
+    #time.sleep(10)
+    #logger.debug(f"Resuming test ...");
+    # Use static AcctNum 1058395, 1058394, 1059642
+    id =  1058394
+
+    param = {}
+
+    # specify the target id (the new created subaccount)
+    param['AcctNum'] = id
+    logger.info(f"Target sub-account to be updated AcctNum is {id}.")
+
+    # Specify the account information to be updated here 
+    #    {
+    #        "AcctName": type("string"),                     # string (Mandatory)   
+    #        "Password": type("string"),                     # string                                   
+    #        "NumTrial Days": type(30),                      # int
+    #        "QuotaGB": type(1),                             # int
+    #        "ConvertToPaid": type(False),                   # Boolean
+    #        "ResetAccessKeys": type(False),                 # Boolean
+    #        "PasswordResetRequired": type(True),            # Boolean
+    #        "EnableFTP": type(True),                        # Boolean
+    #        "Inactive": type(False),                        # Boolean
+    #        "SendPasswordSetToSubAccountEmail": type(True), # Boolean
+    #        "AllowAccountDelete": type(True),               # Boolean
+    #        "DisableMFA": type(False),                      # Boolean        
+    #    }
+
+    # New updated AcctName 
+    param["AcctName"] = randomname(24) + NEW_EMAIL_DOMAIN_NAME
+    logger.debug(f"New Updated Sub-account AcctName = {param['AcctName']}")  
     
-    debugRespAcct = {
-        "AcctName": "9d0a2872855afca3c11fe46e9a4018e2@wasabi.com",
-        "AcctNum": 124,
-        "AccessKey": "Z1JI27OQ75B00OLDLYMP",
-        "SecretKey": "z69QahHLjvrSnuHKJOqVufzazv1VcVJpAITvJWjN",
-        "IsTrial": True,
-        "TrialExpiry": "2018-03-09T00:00:00Z",
-        "QuotaGB": 1024,
-        "FTPEnabled": True,
-        "Inactive": False,
-    }
+    logger.debug(f"Calling update_subaccount() ...")
+    
+    updated_subaccount = update_subaccount(**param)
 
-    keyList = list(debugRespAcct.keys())
-    for key in keyList:
-        logger.debug(f"{key} is being updated")
-        if key in acct:
-            # found matching parameter
-            logger.debug(f"Matching parameter : {key} = {acct[key]}")
-            # acct corresponding key's value is overwritten by the given parameter key's value
-            debugRespAcct[key] = acct[key]   
+    logger.debug(f"create_subaccount() completed.")  
 
-    ONLY USED FOR DEBUG (TO BE DELETED)
-'''
+    ## Updated sub-account 
+    logger.info(f"{updated_subaccount}");  
+    logger.debug(f"{type(updated_subaccount)}");  
+
+    delete_dummy_subaccount(id)
+    
+    logger.info(f"updated_subaccount test completed.");  
+
+
+
 if __name__ == "__main__":
     main()

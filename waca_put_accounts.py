@@ -65,7 +65,7 @@ logger.debug(f"Current Logging Level is {level}")
 #   "AcctName": "",                             # string    (MANDATORY: email address)
 #   "IsTrial": True,                            # Boolean   default: True
 #   "Password": "",                             # string    default: "Wasabi"
-#   "NumTrial": 30,                             # int       default: 30
+#   "NumTrial Day": 30,                         # int       default: 30
 #   "QuotaGB": 1,                               # int       default: 1 GB
 #   "PasswordResetRequired": True,              # Boolean   default: True
 #   "EnableFTP": True,                          # Boolean   default: True
@@ -120,7 +120,7 @@ def create_subaccount(**acctInfo):
         "AcctName": "",                             # string    (MANDATORY: email address)
         "IsTrial": True,                            # Boolean   default: True
         "Password": WACA_DEFAULt_PASSWORD,          # string    default: WACA_DEFAULT_PASSWORD
-        "NumTrial": 30,                             # int       default: 30
+        "NumTrial Day": 30,                         # int       default: 30
         "QuotaGB": 1,                               # int       default: 1 GB
         "PasswordResetRequired": True,              # Boolean   default: True
         "EnableFTP": True,                          # Boolean   default: True
@@ -180,8 +180,12 @@ def put_accounts(acct):
 
     ## Request Header with API Key Authentication
     api_head = {
-        'Authorization':api_key_value
+        'Authorization':api_key_value,
+        'X-Wasabi-Service': 'partner',
     }
+    # "Content-Type: application/json; charset=utf-8" # request( ,json=data )
+    # Content-Type: application/json
+    # X-Wasabi-Service: partner
 
     #PUT /v1/accounts
     url = url + '/v1/accounts'
@@ -226,11 +230,11 @@ def put_accounts(acct):
 # randomname for generate random string for email address creation
 # only for development and test purpose 
 
-import random, string
-
 def randomname(n):
-   randlst = [random.choice(string.ascii_letters + string.digits) for i in range(n)]
-   return ''.join(randlst).lower()
+    import random, string
+
+    randlst = [random.choice(string.ascii_letters + string.digits) for i in range(n)]
+    return ''.join(randlst).lower()
 
 
 # for the execution of this script only
@@ -241,8 +245,8 @@ def main():
     param = {
         "AcctName": "",                              # string    (MANDATORY: email address)
 #        "IsTrial": True,                            # Boolean   default: True
-#        "Password": "@@@@@@@@@@@",                   # string    default: "Wasabi"
-#        "NumTrial": 30,                             # int       default: 30
+#        "Password": "@@@@@@@@@@@",                  # string    default: "Wasabi"
+#        "NumTrial Day": 30,                         # int       default: 30
         "QuotaGB": 10,                               # int       default: 1 GB
         "PasswordResetRequired": False,              # Boolean   default: True
 #        "EnableFTP": True,                          # Boolean   default: True
