@@ -219,7 +219,7 @@ def get_util_subaccounts(id, **dateParams):
 # for the execution of this script only
 def main():
 
-    from waca_post_updated_subaccount import get_random_subaccount
+    from waca_toolbox import get_random_subaccount
 
     # AcctNum
     id = 0

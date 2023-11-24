@@ -234,20 +234,11 @@ def put_accounts(acct):
         logger.info(f"Account Name  : {newCreatedAcct['AcctName']}");
     return newCreatedAcct
 
-# ****************************************************************
-# randomname for generate random string for email address creation
-# only for development and test purpose 
-
-def randomname(n):
-    import random, string
-
-    randlst = [random.choice(string.ascii_letters + string.digits) for i in range(n)]
-    return ''.join(randlst).lower()
-
-
 # for the execution of this script only
 def main():
-
+    
+    from waca_toolbox import randomname
+    
     EMAIL_DOMAIN_NAME = "@wacawasabi.com"    
     
     param = {
@@ -267,7 +258,7 @@ def main():
     logger.debug(f"Sub-account AcctName = {param['AcctName']}")  
     
     logger.debug(f"Calling create_subaccount() ...")
-      
+
     new_subaccount = create_subaccount(**param)
 
     logger.debug(f"create_subaccount() completed.")  

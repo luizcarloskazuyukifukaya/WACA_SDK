@@ -247,7 +247,7 @@ def post_account(acctNum, acct):
     # This cause Internal Server Error json=acct
     # Response code: 500    
     #r = requests.post( url, headers=api_head, json=json.dumps(acct))
-     
+
     # ********* requests.post only works with 'data=acct' *************
     # Response code: 403
     # You are not permitted to complete that action
@@ -268,7 +268,7 @@ def post_account(acctNum, acct):
     ## Response JSON
     logger.debug(f"{r.json()}");  
     logger.debug(f"{type(r.json())}");  
- 
+
     #print(f"{r.json()}");  
     #print(f"{type(r.json())}");  
     ## Sub-Accounts Information
@@ -284,91 +284,17 @@ def post_account(acctNum, acct):
         logger.debug("===================================================================================");
     logger.info(f"{r.json()}")
     logger.info(f"{newCreatedAcct}")
+    
     return newCreatedAcct
-
-# for the execution of this script only
-# this is only for the test of the updated_subaccount()
-def create_dummy_subaccount():
-    from waca_put_accounts import create_subaccount
-    from waca_put_accounts import randomname
-    
-    EMAIL_DOMAIN_NAME = "@postwacawasabi.com"    
-    
-    param = {
-#        "AcctName": "",                              # string    (MANDATORY: email address)
-#        "IsTrial": True,                            # Boolean   default: True
-#        "Password": "@@@@@@@@@@@",                  # string    default: "Wasabisys"
-#        "NumTrailDay": 30,                         # int       default: 30
-        "QuotaGB": 10,                               # int       default: 1 GB
-        "PasswordResetRequired": False,              # Boolean   default: True
-#        "EnableFTP": True,                          # Boolean   default: True
-#        "Inactive": False,                          # Boolean   default: False
-#        "SendPasswordSetToSubAccountEmail": True,   # Boolean   default: True
-#        "AllowAccountDelete": True,                 # Boolean   default: True
-        }
-
-    param["AcctName"] = randomname(24) + EMAIL_DOMAIN_NAME
-    logger.debug(f"Sub-account AcctName = {param['AcctName']}")  
-    
-    logger.debug(f"Calling create_subaccount() ...")
-    
-    new_subaccount = create_subaccount(**param)
-
-    logger.debug(f"create_subaccount() completed.")  
-
-    ## return value 
-    logger.debug(f"{new_subaccount}");  
-    logger.debug(f"{type(new_subaccount)}");  
-
-    #-----------------------------------------------------------
-    #-----------------------------------------------------------
-    id = new_subaccount['AcctNum']
-    return id
-
-# get a random acctNum from the existing sub-accounts
-def get_random_subaccount():
-    from waca_get_all_subaccounts import get_all_subaccounts 
-
-    acctNum = 0 # initial ID in case no subaccount exist   
-
-    all_subaccounts = get_all_subaccounts()     # get all sub-accounts information (list)
-    #logger.debug(f"all_subaccounts = {all_subaccounts}.")
-    #logger.debug(f"all_subaccounts type is {type(all_subaccounts)}.")
-    
-    num_subaccounts = len(all_subaccounts)      # registered sub-account number
-
-    if num_subaccounts == 0:
-        logger.info(f"The call for get_a_specific_subaccount() will fail as there is no subaccount created.")        
-    else:
-        idx =  random.randrange(0, num_subaccounts) # select index of the existing sub-account information
-        acctNum = all_subaccounts[idx]["AcctNum"]
-    
-    logger.debug(f"Calling get_a_specific_subaccount() ...")
-    logger.info(f"Target sub-account AcctNum = {acctNum}")
-
-    logger.debug(f"get_random_subaccount() completed.")  
-    return acctNum
-
-# for the execution of this script only
-# this is only for the test of the updated_subaccount()
-# delete the dummy sub-account created for the test
-def delete_dummy_subaccount(id):
-    from waca_delete_subaccount import delete_subaccount
-
-    logger.debug(f"deleting sub-account AcctNum : {id}");  
-
-    # delete subaccount created
-    delete_subaccount(id)
-    
-    logger.debug(f"deleted");  
-
 
 
 # for the execution of this script only
 def create_update_delete():
     import time
 
-    from waca_put_accounts import randomname
+    from waca_toolbox import create_dummy_subaccount
+    from waca_toolbox import delete_dummy_subaccount
+    from waca_toolbox import randomname
     from waca_get_specific_subaccount import get_a_specific_subaccount
 
     NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
@@ -416,11 +342,12 @@ def create_update_delete():
     
     logger.info(f"updated_subaccount test completed.");  
 
-# 
+# Update exiting subaccount
 def update_existing():
     import time
 
     from waca_get_specific_subaccount import get_a_specific_subaccount
+    from waca_toolbox import get_random_subaccount
 
     # Instead of creating new subaccount, let's get from existing one
     id = get_random_subaccount()
@@ -457,8 +384,11 @@ def update_existing():
     
     logger.info(f"updated_subaccount test completed.");  
 
+# generate dummy update param
+# for test the update_subaccount()
 def generate_dummy_update_param():
-    from waca_put_accounts import randomname
+
+    from waca_toolbox import randomname
 
     NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
 
