@@ -46,14 +46,16 @@ logger.debug(f"Current Logging Level is {level}")
 ## WACA API specific URL
 # -----------------------------------------------
 # GET Utilizations for Control and Sub-Accounts
-# https://docs.wasabi.com/docs/get-utilizations-for-control-and-sub-accounts
-# GET /v1/utilizations
+# https://docs.wasabi.com/docs/get-utilizations-for-a-sub-account
+# GET /v1/accounts/<AcctNum>/utilizations
 # -----------------------------------------------
+# INPUT Mandatory
+# AcctNum: sub-account id (int)
 # INPUT (optional, when provided both should be specified)
 # f: Start date of the utilization (ex. f='2023-11-20')
 # t: End date of the utilization (ex. t='2023-12-20')
 # Example:
-# utils = get_util_control_subaccounts(f='2023-10-20', t='2023-12-20') 
+# utils = get_util_control_subaccounts(f='2023-10-20', t='20') 
 # -----------------------------------------------
 # Return the daily storage and data transfer associated 
 # with the Control account and the sub-account, 
@@ -94,7 +96,7 @@ logger.debug(f"Current Logging Level is {level}")
 #[] (NULL)
 #
 from datetime import datetime
-def get_util_control_subaccounts(**dateParams):
+def get_util_subaccounts(id, **dateParams):
     # initializing format
     format = "%Y-%m-%d"
     
@@ -142,6 +144,7 @@ def get_util_control_subaccounts(**dateParams):
 
     # From here either param is 2 or 0 and is valid
     # fromDate, toDate to be used when paramValidNum == 2
+    # The sub-account AcctNum is specified with 'id'
     httpParam = {}
     httpParam['from'] = fromDate
     httpParam['to'] = toDate
@@ -161,7 +164,7 @@ def get_util_control_subaccounts(**dateParams):
         'Authorization':api_key_value
     }
 
-    url = "{}/v1/utilizations".format(url)
+    url = "{}/v1/accounts/{}/utilizations".format(url, id)
 
     logger.info(f"Target URL is {url}")
 
@@ -196,11 +199,24 @@ def get_util_control_subaccounts(**dateParams):
 
 # for the execution of this script only
 def main():
+
+    from waca_post_updated_subaccount import get_random_subaccount
+
+    # AcctNum
+    id = 0
+    
+    # Instead of creating new subaccount, let's get from existing one
+    id = get_random_subaccount()
+    #
+    # id = 1058180 # fixed account
+    #id = 1060004 
+    logger.info(f"Target AcctNum for update is {id}");
+
     #################################################################
     # case 1: no parameter
-    logger.debug(f"Calling get_util_control_subaccounts() ...")
-    all_utils = get_util_control_subaccounts()
-    logger.debug(f"get_util_control_subaccounts() completed.")  
+    logger.debug(f"Calling get_util_subaccounts(id) ...")
+    all_utils = get_util_subaccounts(id)
+    logger.debug(f"get_util_subaccounts(id).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -208,9 +224,9 @@ def main():
 
     #################################################################
     # case 2: with parameter (f and t)
-    logger.debug(f"Calling get_util_control_subaccounts(f, t) ...")
-    all_utils = get_util_control_subaccounts(f="2023-11-03", t="2023-11-24")
-    logger.debug(f"get_util_control_subaccounts(f, t) completed.")  
+    logger.debug(f"Calling get_util_subaccounts(id, f, t) ...")
+    all_utils = get_util_subaccounts(id, f="2023-11-03", t="2023-11-09")
+    logger.debug(f"get_util_subaccounts(id, f,t).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -218,9 +234,9 @@ def main():
 
     #################################################################
     # case 3: with parameter (f only) [Should Fail]
-    logger.debug(f"Calling get_util_control_subaccounts(f) ...")
-    all_utils = get_util_control_subaccounts(f="2023-11-03")
-    logger.debug(f"get_util_control_subaccounts(f) completed.")  
+    logger.debug(f"Calling get_util_control_subaccounts(id, f) ...")
+    all_utils = get_util_subaccounts(id, f="2023-11-03")  
+    logger.debug(f"get_util_control_subaccounts(id, f).")  
 
     ## return value 
     logger.info(f"{all_utils}");  

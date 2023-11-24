@@ -19,7 +19,7 @@ import waca_global as g
 
 import logging
 
-# WACA configuration handdler
+# WACA configuration handler
 #import waca_config
 from waca_config import parse_conf
 
