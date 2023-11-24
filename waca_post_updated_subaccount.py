@@ -276,10 +276,14 @@ def post_account(acctNum, acct):
     if r.status_code == 200:
         newCreatedAcct = r.json()
         logger.debug("===================================================================================");
+        logger.debug(" POST an Updated Sub-Account Response.");
         logger.debug(newCreatedAcct);
         logger.debug("-----------------------------------------------------------------------------------");
         logger.info(f"Account Number: {newCreatedAcct['AcctNum']}");
         logger.info(f"Account Name  : {newCreatedAcct['AcctName']}");
+        logger.debug("===================================================================================");
+    logger.info(f"{r.json()}")
+    logger.info(f"{newCreatedAcct}")
     return newCreatedAcct
 
 # for the execution of this script only
@@ -321,8 +325,8 @@ def create_dummy_subaccount():
     id = new_subaccount['AcctNum']
     return id
 
-# get a ramdom acctNum from the existing sub-accounts
-def get_ramdom_subaccount():
+# get a random acctNum from the existing sub-accounts
+def get_random_subaccount():
     from waca_get_all_subaccounts import get_all_subaccounts 
 
     acctNum = 0 # initial ID in case no subaccount exist   
@@ -342,7 +346,7 @@ def get_ramdom_subaccount():
     logger.debug(f"Calling get_a_specific_subaccount() ...")
     logger.info(f"Target sub-account AcctNum = {acctNum}")
 
-    logger.debug(f"get_ramdom_subaccount() completed.")  
+    logger.debug(f"get_random_subaccount() completed.")  
     return acctNum
 
 # for the execution of this script only
@@ -365,6 +369,7 @@ def create_update_delete():
     import time
 
     from waca_put_accounts import randomname
+    from waca_get_specific_subaccount import get_a_specific_subaccount
 
     NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
 
@@ -378,7 +383,7 @@ def create_update_delete():
     #id =  1058394
 
     # Instead of creating new subaccount, let's get from existing one
-    #id = get_ramdom_subaccount()
+    #id = get_random_subaccount()
     #logger.info(f"Target AcctNum for update is {id}");
 
     updateParam = generate_dummy_update_param()
@@ -394,8 +399,18 @@ def create_update_delete():
     logger.debug(f"update_subaccount() called.")  
 
     ## Updated sub-account 
-    logger.info(f"{updated_subaccount}");  
-    logger.debug(f"{type(updated_subaccount)}");  
+    logger.info(f"[Response value] {updated_subaccount}");  
+    logger.debug(f"[Response value] {type(updated_subaccount)}");
+    
+    logger.debug(f"Waiting for WACM to complete account UPDATE : {id}");
+    time.sleep(5)      
+    logger.debug(f"Resuming test ...");
+
+    # Get Updated sub-account information
+    new_updated_subaccount = get_a_specific_subaccount(id)  
+    ## Updated sub-account 
+    logger.info(f"{new_updated_subaccount}");  
+    logger.debug(f"{type(new_updated_subaccount)}");
 
     delete_dummy_subaccount(id)
     
@@ -405,9 +420,13 @@ def create_update_delete():
 def update_existing():
     import time
 
+    from waca_get_specific_subaccount import get_a_specific_subaccount
+
     # Instead of creating new subaccount, let's get from existing one
-    #id = get_ramdom_subaccount()
-    id = 1058180 # fixed account 
+    #id = get_random_subaccount()
+    #
+    # id = 1058180 # fixed account
+    id = 1060004 
     logger.info(f"Target AcctNum for update is {id}");
 
     updateParam = generate_dummy_update_param()
@@ -423,8 +442,18 @@ def update_existing():
     logger.debug(f"update_subaccount() called.")  
 
     ## Updated sub-account 
-    logger.info(f"{updated_subaccount}");  
-    logger.debug(f"{type(updated_subaccount)}");  
+    logger.info(f"[Response value] {updated_subaccount}");  
+    logger.debug(f"[Response value] {type(updated_subaccount)}");
+    
+    logger.debug(f"Waiting for WACM to complete account UPDATE : {id}");
+    time.sleep(5)      
+    logger.debug(f"Resuming test ...");
+
+    # Get Updated sub-account information
+    new_updated_subaccount = get_a_specific_subaccount(id)  
+    ## Updated sub-account 
+    logger.info(f"[Updated Value] {new_updated_subaccount}");  
+    logger.debug(f"[Updated Value] {type(new_updated_subaccount)}");
     
     logger.info(f"updated_subaccount test completed.");  
 
@@ -453,62 +482,62 @@ def generate_dummy_update_param():
     # placeholder (to be in the first order)
     param['AcctNum'] = 0
     
-    # From here you can specify which key to update with the ramdom value
+    # From here you can specify which key to update with the random value
     # New updated AcctName 
     key = "AcctName"
     param[key] = randomname(24) + NEW_EMAIL_DOMAIN_NAME
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")  
+    logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated Password
     #key = "Password"
     #param[key] = randomname(12)
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated NumTrailDays
-    key = "NumTrailDays"
-    param[key] = random.randrange(1, 30, 5) # from 10 to 90, 5 days step
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #key = "NumTrailDays"
+    #param[key] = random.randrange(1, 30, 5) # from 10 to 90, 5 days step
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated QuotaGB
     key = "QuotaGB"
     param[key] = random.randrange(20, 1000, 50) # from 10 to 1000, 50 GB step
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated ConvertToPaid
     #key = "ConvertToPaid"
     #param[key] = random.choice([True, False])
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated ResetAccessKeys
-    #key = "ResetAccessKeys"
-    #param[key] = random.choice([True, False])
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    key = "ResetAccessKeys"
+    param[key] = random.choice([True, False])
+    logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated PasswordResetRequired
     #key = "PasswordResetRequired"
     #param[key] = random.choice([True, False])
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated EnableFTP
     key = "EnableFTP"
     param[key] = random.choice([True, False])
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated Inactive
-    key = "Inactive"
-    param[key] = random.choice([True, False])
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #key = "Inactive"
+    #param[key] = random.choice([True, False])
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated SendPasswordSetToSubAccountEmail
-    key = "SendPasswordSetToSubAccountEmail"
-    param[key] = random.choice([True, False])
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #key = "SendPasswordSetToSubAccountEmail"
+    #param[key] = random.choice([True, False])
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated AllowAccountDelete
     #key = "AllowAccountDelete"
     #param[key] = random.choice([True, False])
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    #logger.info(f"New Updated Sub-account {key} = {param[key]}")
     # New updated DisableMFA
     key = "DisableMFA"
     param[key] = random.choice([True, False])
-    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    logger.info(f"New Updated Sub-account {key} = {param[key]}")
 
     return param
 
 
 def main():
-    create_update_delete()
-    #update_existing()
+    #create_update_delete()
+    update_existing()
 
 if __name__ == "__main__":
     main()
