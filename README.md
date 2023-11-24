@@ -1,5 +1,5 @@
-# Python WACA SDK
-Python SDK with Wasabi Account Control API
+# WACA SDK for Python
+Python SDK module for WACM using Wasabi Account Control API (WACA)
 
 The details of the Wasabi Account Control API (WACA) is published on the following URL:
 https://docs.wasabi.com/docs/account-control-api

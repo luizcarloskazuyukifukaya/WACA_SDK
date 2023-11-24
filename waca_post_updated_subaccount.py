@@ -371,7 +371,7 @@ def create_update_delete():
     # create dummy subaccount
     id = create_dummy_subaccount()
     logger.debug(f"Waiting for WACM to complete account creation : {id}");
-    time.sleep(60)      
+    time.sleep(5)      
     # It cause Server Internal Error if the update_subaccount is called in short time after creation
     logger.debug(f"Resuming test ...");
     # Use static AcctNum 1058395, 1058394, 1059642
@@ -406,7 +406,8 @@ def update_existing():
     import time
 
     # Instead of creating new subaccount, let's get from existing one
-    id = get_ramdom_subaccount()
+    #id = get_ramdom_subaccount()
+    id = 1058180 # fixed account 
     logger.info(f"Target AcctNum for update is {id}");
 
     updateParam = generate_dummy_update_param()
@@ -451,22 +452,24 @@ def generate_dummy_update_param():
 
     # placeholder (to be in the first order)
     param['AcctNum'] = 0
+    
+    # From here you can specify which key to update with the ramdom value
     # New updated AcctName 
-    #key = "AcctName"
-    #param[key] = randomname(24) + NEW_EMAIL_DOMAIN_NAME
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")  
+    key = "AcctName"
+    param[key] = randomname(24) + NEW_EMAIL_DOMAIN_NAME
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")  
     # New updated Password
     #key = "Password"
     #param[key] = randomname(12)
     #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
     # New updated NumTrailDays
     key = "NumTrailDays"
-    param[key] = random.randrange(1, 90, 5) # from 10 to 90, 5 days step
+    param[key] = random.randrange(1, 30, 5) # from 10 to 90, 5 days step
     logger.debug(f"New Updated Sub-account {key} = {param[key]}")
     # New updated QuotaGB
-    #key = "QuotaGB"
-    #param[key] = random.randrange(20, 1000, 50) # from 10 to 1000, 50 GB step
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    key = "QuotaGB"
+    param[key] = random.randrange(20, 1000, 50) # from 10 to 1000, 50 GB step
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
     # New updated ConvertToPaid
     #key = "ConvertToPaid"
     #param[key] = random.choice([True, False])
@@ -484,13 +487,13 @@ def generate_dummy_update_param():
     param[key] = random.choice([True, False])
     logger.debug(f"New Updated Sub-account {key} = {param[key]}")
     # New updated Inactive
-    #key = "Inactive"
-    #param[key] = random.choice([True, False])
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    key = "Inactive"
+    param[key] = random.choice([True, False])
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
     # New updated SendPasswordSetToSubAccountEmail
-    #key = "SendPasswordSetToSubAccountEmail"
-    #param[key] = random.choice([True, False])
-    #logger.debug(f"New Updated Sub-account {key} = {param[key]}")
+    key = "SendPasswordSetToSubAccountEmail"
+    param[key] = random.choice([True, False])
+    logger.debug(f"New Updated Sub-account {key} = {param[key]}")
     # New updated AllowAccountDelete
     #key = "AllowAccountDelete"
     #param[key] = random.choice([True, False])
@@ -504,8 +507,8 @@ def generate_dummy_update_param():
 
 
 def main():
-    #create_update_delete()
-    update_existing()
+    create_update_delete()
+    #update_existing()
 
 if __name__ == "__main__":
     main()
