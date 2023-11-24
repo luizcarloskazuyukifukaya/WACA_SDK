@@ -117,16 +117,3 @@ def get_random_subaccount():
 
     logger.debug(f"get_random_subaccount() completed.")  
     return acctNum
-
-# for the execution of this script only
-# this is only for the test of the updated_subaccount()
-# delete the dummy sub-account created for the test
-def delete_dummy_subaccount(id):
-    from waca_delete_subaccount import delete_subaccount
-
-    logger.debug(f"deleting sub-account AcctNum : {id}");  
-
-    # delete subaccount created
-    delete_subaccount(id)
-    
-    logger.debug(f"deleted");  

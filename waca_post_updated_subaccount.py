@@ -293,9 +293,9 @@ def create_update_delete():
     import time
 
     from waca_toolbox import create_dummy_subaccount
-    from waca_toolbox import delete_dummy_subaccount
     from waca_toolbox import randomname
     from waca_get_specific_subaccount import get_a_specific_subaccount
+    from waca_delete_subaccount import delete_subaccount
 
     NEW_EMAIL_DOMAIN_NAME = "@poweredbywasabi.ai"    
 
@@ -338,7 +338,7 @@ def create_update_delete():
     logger.info(f"{new_updated_subaccount}");  
     logger.debug(f"{type(new_updated_subaccount)}");
 
-    delete_dummy_subaccount(id)
+    delete_subaccount(id)
     
     logger.info(f"updated_subaccount test completed.");  
 
