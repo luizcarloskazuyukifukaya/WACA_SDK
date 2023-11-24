@@ -56,6 +56,10 @@ logger.debug(f"Current Logging Level is {level}")
 # t: End date of the utilization (ex. t='2023-12-20')
 # Example:
 # utils = get_util_control_subaccounts(f='2023-10-20', t='20') 
+# INPUT (optional)
+# latest=true 
+# If a latest=true is passed via the query string parameter on the URL path, 
+# then only the most recent calculated utilization is returned.
 # -----------------------------------------------
 # Return the daily storage and data transfer associated 
 # with the Control account and the sub-account, 
@@ -102,6 +106,7 @@ def get_util_subaccounts(id, **dateParams):
     
     # number of valid parameters 
     paramValidNum = 0
+    latestFlag = False # (optional) latest='true'
     fromDate = ""  # start date 'YY-MM-DD'
     toDate   = ""  # end date 'YY-MM-DD'
     
@@ -112,7 +117,16 @@ def get_util_subaccounts(id, **dateParams):
 
     for key, value in dateParams.items():
         logger.debug(f"{key}: {value}")
-        
+
+        # check latest=true flag
+        if key == "latest":
+            if value == "true":
+                latestFlag = True
+                logger.info(f"(option specified) latest = {value}")
+            else:
+                logger.info(f"(option specified, but the value is wrong. Dismiss it.) latest = {value}")
+                continue        
+
         # check date format
         try:
             res = bool(datetime.strptime(value, format))
@@ -132,23 +146,28 @@ def get_util_subaccounts(id, **dateParams):
         if paramValidNum == 2:
             break
         
+    # From here either param is 2 or 0 and is valid
+    # fromDate, toDate to be used when paramValidNum == 2
+    # The sub-account AcctNum is specified with 'id'
+    # When latestFlag is True, then the most recent calculated utilization is returned
+    httpParam = {}
     if paramValidNum == 2:
         logger.debug(f"Input parameter is valid")
         logger.info(f"From date = {fromDate}")
         logger.info(f"To date = {toDate}")
+
+        httpParam['from'] = fromDate
+        httpParam['to'] = toDate
+        logger.debug(f"HTTP(s) param =  {httpParam}")
     elif paramValidNum == 0:
         logger.debug(f"No input parameter given.")
     else:
         logger.error(f"Input parameter is wrong")
         return accts # {} NULL
 
-    # From here either param is 2 or 0 and is valid
-    # fromDate, toDate to be used when paramValidNum == 2
-    # The sub-account AcctNum is specified with 'id'
-    httpParam = {}
-    httpParam['from'] = fromDate
-    httpParam['to'] = toDate
-    logger.debug(f"HTTP(s) param =  {httpParam}")
+    # If optional parameter (latest=true) is specified
+    if latestFlag:
+        httpParam['latest'] = 'true'
 
     # read WACA config file (~/.wasabi/waca.conf)
     api_conf = parse_conf()
@@ -237,6 +256,26 @@ def main():
     logger.debug(f"Calling get_util_control_subaccounts(id, f) ...")
     all_utils = get_util_subaccounts(id, f="2023-11-03")  
     logger.debug(f"get_util_control_subaccounts(id, f).")  
+
+    ## return value 
+    logger.info(f"{all_utils}");  
+    logger.debug(f"{type(all_utils)}");  
+
+    #################################################################
+    # case 4: with parameter (latest='true')
+    logger.debug(f"Calling get_util_subaccounts(id, latest) ...")
+    all_utils = get_util_subaccounts(id, latest='true')
+    logger.debug(f"get_util_subaccounts(id, latest).")  
+
+    ## return value 
+    logger.info(f"{all_utils}");  
+    logger.debug(f"{type(all_utils)}");  
+
+    #################################################################
+    # case 5: with parameter (f and t and latest='true')
+    logger.debug(f"Calling get_util_subaccounts(id, f, t, latest) ...")
+    all_utils = get_util_subaccounts(id, f="2023-11-03", t="2023-11-09", latest='true')
+    logger.debug(f"get_util_subaccounts(id, f, t, latest).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
