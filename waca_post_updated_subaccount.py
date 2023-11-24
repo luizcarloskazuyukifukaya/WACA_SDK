@@ -423,10 +423,10 @@ def update_existing():
     from waca_get_specific_subaccount import get_a_specific_subaccount
 
     # Instead of creating new subaccount, let's get from existing one
-    #id = get_random_subaccount()
+    id = get_random_subaccount()
     #
     # id = 1058180 # fixed account
-    id = 1060004 
+    #id = 1060004 
     logger.info(f"Target AcctNum for update is {id}");
 
     updateParam = generate_dummy_update_param()
