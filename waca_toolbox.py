@@ -60,7 +60,6 @@ def randomname(n):
 # this is only for the test of the updated_subaccount()
 def create_dummy_subaccount():
     from waca_put_accounts import create_subaccount
-    from waca_put_accounts import randomname
     
     EMAIL_DOMAIN_NAME = "@postwacawasabi.com"    
     
