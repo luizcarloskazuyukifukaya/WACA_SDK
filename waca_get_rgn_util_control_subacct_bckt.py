@@ -139,12 +139,12 @@ def get_rgn_util_control_subacct_bkt(**param):
             else:
                 logger.error(f"rgn param specified, but the value type is wrong. type = {type(value)}")
                 paramValidNum = -1
+        else:
+            # Other parameter specified
+            logger.error(f"Other invalid param specified = {value} , type = {type(value)}")
+            paramValidNum = -1
+            break
 
-
-#        if paramValidNum == 1:
-#            # disregard other parameters
-#            break
-        
     if paramValidNum == 1:
         logger.debug(f"Input parameter is valid")
         logger.info(f"includeRegionalUtilizations = {rgnValue}")
@@ -157,7 +157,8 @@ def get_rgn_util_control_subacct_bkt(**param):
     # From here either param is 1 or 0 and is valid
     # if rgn = True, then includeRegionalUtilizations=true is added in the request parameter
     httpParam = {}
-    httpParam['includeRegionalUtilizations'] = rgnValue
+    if rgnValue:    # only specify the param when it is true
+        httpParam['includeRegionalUtilizations'] = rgnValue
     logger.debug(f"HTTP(s) param =  {httpParam}")
 
     # read WACA config file (~/.wasabi/waca.conf)
@@ -246,7 +247,7 @@ def main():
     #################################################################
     # case 5: with parameter (regional=True) Fail (key name should be rgn)
     logger.debug(f"Calling get_rgn_util_control_subacct_bkt(none rgn key ) ...")
-    all_utils = get_rgn_util_control_subacct_bkt(rgn='true')
+    all_utils = get_rgn_util_control_subacct_bkt(reginal='true')
     logger.debug(f"get_rgn_util_control_subacct_bkt(none rgn key) completed.")  
 
     ## return value 
@@ -256,7 +257,7 @@ def main():
     #################################################################
     # case 6: with parameter (regional=True, rgn=True) Fail (key name should be rgn + valid key and value)
     logger.debug(f"Calling get_rgn_util_control_subacct_bkt(none rgn key and valid one ) ...")
-    all_utils = get_rgn_util_control_subacct_bkt(rng=True, rgn='true')
+    all_utils = get_rgn_util_control_subacct_bkt(rgn=True, other='true')
     logger.debug(f"get_rgn_util_control_subacct_bkt(none rgn key and valid one) completed.")  
 
     ## return value 

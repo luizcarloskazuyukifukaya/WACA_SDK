@@ -160,11 +160,11 @@ def get_rgn_util_subacct_bckt(id, **param):
             else:
                 logger.error(f"rgn param specified, but the value type is wrong. type = {type(value)}")
                 paramValidNum = -1
-
-
-#        if paramValidNum == 1:
-#            # disregard other parameters
-#            break
+        else:
+            # Other parameter specified
+            logger.error(f"Other invalid param specified = {value} , type = {type(value)}")
+            paramValidNum = -1
+            break
         
     if paramValidNum == 1:
         logger.debug(f"Input parameter is valid")
@@ -178,7 +178,8 @@ def get_rgn_util_subacct_bckt(id, **param):
     # The sub-account AcctNum is specified with 'id'
     # if rgn = True, then includeRegionalUtilizations=true is added in the request parameter
     httpParam = {}
-    httpParam['includeRegionalUtilizations'] = rgnValue
+    if rgnValue:    # only specify the param when it is true
+        httpParam['includeRegionalUtilizations'] = rgnValue
     logger.debug(f"HTTP(s) param =  {httpParam}")
 
     # read WACA config file (~/.wasabi/waca.conf)
@@ -236,10 +237,11 @@ def main():
     
     # Instead of creating new subaccount, let's get from existing one
     id = get_random_subaccount()
+    #id = 1059684
     #
     # id = 1058180 # fixed account
     #id = 1060004 
-    logger.info(f"Target AcctNum for update is {id}");
+    logger.info(f"Target AcctNum for request information is {id}");
 
     #################################################################
     # case 1: no parameter
@@ -252,21 +254,19 @@ def main():
     logger.debug(f"{type(all_utils)}");  
 
     #################################################################
-    # case 2: with parameter (id, rng=True)
-    logger.debug(f"Calling get_rgn_util_subacct_bckt(id, rng=True) ...")
-    all_utils = get_rgn_util_subacct_bckt(id, rng=True)
-    logger.debug(f"get_rgn_util_subacct_bckt(id, rng=True) Done...")
-
+    # case 2: with parameter (id, rgn=True)
+    logger.debug(f"Calling get_rgn_util_subacct_bckt(id, rgn=True) ...")
+    all_utils = get_rgn_util_subacct_bckt(id, rgn=True)
+    logger.debug(f"get_rgn_util_subacct_bckt(id, rgn=True) Done...")
     ## return value 
     logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.debug(f"{type(all_utils)}");     
 
     #################################################################
-    # case 3: with parameter (id, rng='false')
-    logger.debug(f"Calling get_rgn_util_subacct_bckt(id, rng=True) ...")
-    all_utils = get_rgn_util_subacct_bckt(id, rng=True)
-    logger.debug(f"get_rgn_util_subacct_bckt(id, rng=True) Done...")
-
+    # case 3: with parameter (id, rgn='false')
+    logger.debug(f"Calling get_rgn_util_subacct_bckt(id, rgn='true') ...")
+    all_utils = get_rgn_util_subacct_bckt(id, rgn='true')
+    logger.debug(f"get_rgn_util_subacct_bckt(id, rgn='true') Done...")  
     ## return value 
     logger.info(f"{all_utils}");
     logger.debug(f"{type(all_utils)}");  
