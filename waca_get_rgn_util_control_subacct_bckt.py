@@ -45,19 +45,21 @@ logger.debug(f"Current Logging Level is {level}")
 
 ## WACA API specific URL
 # -----------------------------------------------
-# GET Utilizations for Control and Sub-Accounts
-# https://docs.wasabi.com/docs/get-utilizations-for-control-and-sub-accounts
-# GET /v1/utilizations
+# GET Regional Utilizations for Control and Sub-Accounts Across All Buckets
+# https://docs.wasabi.com/docs/get-regional-utilizations-for-control-and-sub-accounts-across-all-buckets
+# GET /v1/utilizations?includeRegionalUtilizations=true
 # -----------------------------------------------
-# INPUT (optional, when provided both should be specified)
-# f: Start date of the utilization (ex. f='2023-11-20')
-# t: End date of the utilization (ex. t='2023-12-20')
-# Example:
-# utils = get_util_control_subaccounts(f='2023-10-20', t='2023-12-20') 
+# INPUT (optional)
+# rgn='true'
+# IncludeRegionalUtilizations: True if regional utilizations should be included
+# Example1:
+# utils = get_util_rgn_util_control_subaccnt_bkt(rgn=True)
+# Example2:
+# utils = get_util_rgn_util_control_subaccnt_bkt()
+# Equal to rgn=False is given, no regional utilizations included 
 # -----------------------------------------------
-# Return the daily storage and data transfer associated 
-# with the Control account and the sub-account, 
-# across all buckets in both the Control and sub-accounts.
+# Return the daily storage and data transfer associated with the Control and sub-account, 
+# across all buckets in the Control and sub-account along with regional utilizations.
 # ===============================================
 # Response
 # SUCCESS
@@ -77,74 +79,85 @@ logger.debug(f"Current Logging Level is {level}")
 #        "DeletedStorageSizeBytes": 0,
 #        "OrphanedStorageSizeBytes": 0,
 #        "MinStorageChargeBytes": 777389080432,
-#        "NumAPICalls": 5,
-#        "UploadBytes": 322122548200,
+#        "NumAPICalls": 0,
+#        "UploadBytes": 0,
 #        "DownloadBytes": 0,
-#        "StorageWroteBytes": 322122547200,
+#        "StorageWroteBytes": 0,
 #        "StorageReadBytes": 0,
 #        "NumGETCalls": 0,
-#        "NumPUTCalls": 3,
+#        "NumPUTCalls": 0,
 #        "NumDELETECalls": 0,
 #        "NumLISTCalls": 0,
 #        "NumHEADCalls": 0,
-#        "DeleteBytes": 0
-#    },
+#        "DeleteBytes": 0,
+#        "RegionalUtilizations": {
+#            "us-east-1": {
+#                "NumBillableObjects": 3,
+#                "NumBillableDeletedObjects": 0,
+#                "RawStorageSizeBytes": 322122547200,
+#                "PaddedStorageSizeBytes": 322122547200,
+#                "MetadataStorageSizeBytes": 144,
+#                "DeletedStorageSizeBytes": 0,
+#                "OrphanedStorageSizeBytes": 0,
+#                "NumAPICalls": 0,
+#                "UploadBytes": 0,
+#                "DownloadBytes": 0,
+#                "StorageWroteBytes": 0,
+#                "StorageReadBytes": 0,
+#                "NumGETCalls": 0,
+#                "NumPUTCalls": 0,
+#                "NumDELETECalls": 0,
+#                "NumLISTCalls": 0,
+#                "NumHEADCalls": 0,
+#                "DeleteBytes": 0
+#            }
+#        }
+#    }
 #]
 # FAIL
 #[] (NULL)
 #
-from datetime import datetime
-def get_util_control_subaccounts(**dateParams):
-    # initializing format
-    format = "%Y-%m-%d"
+def get_rgn_util_control_subacct_bkt(**param):
     
     # number of valid parameters 
     paramValidNum = 0
-    fromDate = ""  # start date 'YY-MM-DD'
-    toDate   = ""  # end date 'YY-MM-DD'
+    rgnValue = False
     
     ## Sub-Accounts Information
     accts = {}   
 
-    logger.debug(f"Input parameter =  {dateParams}")
+    logger.debug(f"Input parameter =  {param}")
 
-    for key, value in dateParams.items():
+    for key, value in param.items():
         logger.debug(f"{key}: {value}")
         
-        # check date format
-        try:
-            res = bool(datetime.strptime(value, format))
-            if key == "f":
-                logger.debug(f"From date = {value}")
-                fromDate = value
+        if key == "rgn":
+            logger.debug(f"rgn param specified = {value} , type = {type(value)}")
+            if type(value) == type(True):
+                rgnValue = value
                 paramValidNum = paramValidNum + 1
-            if key == "t":
-                logger.debug(f"To date = {value}")
-                toDate = value
-                paramValidNum = paramValidNum + 1
+            else:
+                logger.error(f"rgn param specified, but the value type is wrong. type = {type(value)}")
+                paramValidNum = -1
 
-        except ValueError:
-            res = False
-            break
 
-        if paramValidNum == 2:
-            break
+#        if paramValidNum == 1:
+#            # disregard other parameters
+#            break
         
-    if paramValidNum == 2:
+    if paramValidNum == 1:
         logger.debug(f"Input parameter is valid")
-        logger.info(f"From date = {fromDate}")
-        logger.info(f"To date = {toDate}")
+        logger.info(f"includeRegionalUtilizations = {rgnValue}")
     elif paramValidNum == 0:
         logger.debug(f"No input parameter given.")
     else:
         logger.error(f"Input parameter is wrong")
         return accts # {} NULL
 
-    # From here either param is 2 or 0 and is valid
-    # fromDate, toDate to be used when paramValidNum == 2
+    # From here either param is 1 or 0 and is valid
+    # if rgn = True, then includeRegionalUtilizations=true is added in the request parameter
     httpParam = {}
-    httpParam['from'] = fromDate
-    httpParam['to'] = toDate
+    httpParam['includeRegionalUtilizations'] = rgnValue
     logger.debug(f"HTTP(s) param =  {httpParam}")
 
     # read WACA config file (~/.wasabi/waca.conf)
@@ -167,11 +180,8 @@ def get_util_control_subaccounts(**dateParams):
 
     ## GET request
     ## requests.get(url, params={key: value}, args)
-    if paramValidNum == 0:
-        r = requests.get( url, headers=api_head);
-    elif paramValidNum == 2:
-        r = requests.get( url, headers=api_head, params=httpParam);
-
+    r = requests.get( url, headers=api_head, params=httpParam)
+ 
     ## Response status code
     logger.info(f"status: {r.status_code}") ; 
 
@@ -198,34 +208,60 @@ def get_util_control_subaccounts(**dateParams):
 def main():
     #################################################################
     # case 1: no parameter
-    logger.debug(f"Calling get_util_control_subaccounts() ...")
-    all_utils = get_util_control_subaccounts()
+    logger.debug(f"Calling get_rgn_util_control_subacct_bckt() ...")
+    all_utils = get_rgn_util_control_subacct_bkt()
     logger.debug(f"get_util_control_subaccounts() completed.")  
 
     ## return value 
     logger.info(f"{all_utils}");  
     logger.debug(f"{type(all_utils)}");  
-
     #################################################################
-    # case 2: with parameter (f and t)
-    logger.debug(f"Calling get_util_control_subaccounts(f, t) ...")
-    all_utils = get_util_control_subaccounts(f="2023-11-03", t="2023-11-24")
-    logger.debug(f"get_util_control_subaccounts(f, t) completed.")  
+    # case 2: with parameter (rgn=True)
+    logger.debug(f"Calling get_rgn_util_control_subacct_bkt(rgn) ...")
+    all_utils = get_rgn_util_control_subacct_bkt(rgn=True)
+    logger.debug(f"get_rgn_util_control_subacct_bkt(rgn) completed.")  
+
+    ## return value 
+    logger.info(f"{all_utils}");  
+    logger.debug(f"{type(all_utils)}");  
+    #################################################################
+    # case 3: with parameter (rgn=False)
+    logger.debug(f"Calling get_rgn_util_control_subacct_bkt(rgn) ...")
+    all_utils = get_rgn_util_control_subacct_bkt(rgn=False)
+    logger.debug(f"get_rgn_util_control_subacct_bkt(rgn) completed.")  
+
+    ## return value 
+    logger.info(f"{all_utils}");  
+    logger.debug(f"{type(all_utils)}");  
+    #################################################################
+    # case 4: with parameter (rgn='true') Fail (string value)
+    logger.debug(f"Calling get_rgn_util_control_subacct_bkt(rgn) ...")
+    all_utils = get_rgn_util_control_subacct_bkt(rgn='true')
+    logger.debug(f"get_rgn_util_control_subacct_bkt(rgn) completed.")  
 
     ## return value 
     logger.info(f"{all_utils}");  
     logger.debug(f"{type(all_utils)}");  
 
     #################################################################
-    # case 3: with parameter (f only) [Should Fail]
-    logger.debug(f"Calling get_util_control_subaccounts(f) ...")
-    all_utils = get_util_control_subaccounts(f="2023-11-03")
-    logger.debug(f"get_util_control_subaccounts(f) completed.")  
+    # case 5: with parameter (regional=True) Fail (key name should be rgn)
+    logger.debug(f"Calling get_rgn_util_control_subacct_bkt(none rgn key ) ...")
+    all_utils = get_rgn_util_control_subacct_bkt(rgn='true')
+    logger.debug(f"get_rgn_util_control_subacct_bkt(none rgn key) completed.")  
 
     ## return value 
     logger.info(f"{all_utils}");  
     logger.debug(f"{type(all_utils)}");  
 
+    #################################################################
+    # case 6: with parameter (regional=True, rgn=True) Fail (key name should be rgn + valid key and value)
+    logger.debug(f"Calling get_rgn_util_control_subacct_bkt(none rgn key and valid one ) ...")
+    all_utils = get_rgn_util_control_subacct_bkt(rng=True, rgn='true')
+    logger.debug(f"get_rgn_util_control_subacct_bkt(none rgn key and valid one) completed.")  
+
+    ## return value 
+    logger.info(f"{all_utils}");  
+    logger.debug(f"{type(all_utils)}");  
 
 if __name__ == "__main__":
     main()
