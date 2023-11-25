@@ -143,8 +143,9 @@ def get_util_control_subaccounts(**dateParams):
     # From here either param is 2 or 0 and is valid
     # fromDate, toDate to be used when paramValidNum == 2
     httpParam = {}
-    httpParam['from'] = fromDate
-    httpParam['to'] = toDate
+    if paramValidNum == 2:
+        httpParam['from'] = fromDate
+        httpParam['to'] = toDate
     logger.debug(f"HTTP(s) param =  {httpParam}")
 
     # read WACA config file (~/.wasabi/waca.conf)
@@ -167,10 +168,7 @@ def get_util_control_subaccounts(**dateParams):
 
     ## GET request
     ## requests.get(url, params={key: value}, args)
-    if paramValidNum == 0:
-        r = requests.get( url, headers=api_head);
-    elif paramValidNum == 2:
-        r = requests.get( url, headers=api_head, params=httpParam);
+    r = requests.get( url, headers=api_head, params=httpParam);
 
     ## Response status code
     logger.info(f"status: {r.status_code}") ; 
