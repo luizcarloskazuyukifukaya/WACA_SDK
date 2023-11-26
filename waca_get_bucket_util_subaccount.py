@@ -45,9 +45,9 @@ logger.debug(f"Current Logging Level is {level}")
 
 ## WACA API specific URL
 # -----------------------------------------------
-# GET Utilizations for Control and Sub-Accounts
-# https://docs.wasabi.com/docs/get-utilizations-for-a-sub-account
-# GET /v1/accounts/<AcctNum>/utilizations
+# GET Utilizations per bucket for a specified Sub-Accounts
+# https://docs.wasabi.com/docs/get-utilizations-in-per-bucket-components
+# GET /v1/accounts/<AcctNum>/utilizations/buckets
 # -----------------------------------------------
 # INPUT Mandatory
 # AcctNum: sub-account id (int)
@@ -55,52 +55,54 @@ logger.debug(f"Current Logging Level is {level}")
 # f: Start date of the utilization (ex. f='2023-11-20')
 # t: End date of the utilization (ex. t='2023-12-20')
 # Example:
-# utils = get_util_subaccount(id, f='2023-10-20', t='2023-11-20') 
+# utils = get_util_control_subaccounts(f='2023-10-20', t='20') 
 # INPUT (optional)
 # latest=true 
 # If a latest=true is passed via the query string parameter on the URL path, 
 # then only the most recent calculated utilization is returned.
 # -----------------------------------------------
-# Return the daily storage and data transfer associated 
-# with the Control account and the sub-account, 
-# across all buckets in both the Control and sub-accounts.
+# Return all daily utilizations broken down into per-bucket components.
+# Using from and to query string parameters (in the format YYYY-MM-DD) 
+# will apply date filters to the result set.
 # ===============================================
 # Response
 # SUCCESS
 #[
 #    {
-#        "UtilizationNum": 39247161,
-#        "AcctNum": 693549,
-#        "AcctPlanNum": 803221,
-#        "StartTime": "2021-12-19T00:00:00Z",
-#        "EndTime": "2021-12-20T00:00:00Z",
-#        "CreateTime": "2021-12-20T02:22:41Z",
-#        "NumBillableObjects": 3,
+#        "BucketUtilizationNum": 6947980,
+#        "AcctNum": 100000042,
+#        "AcctPlanNum": 0,
+#        "BucketNum": 1011082,
+#        "StartTime": "2019-12-26T00:00:00Z",
+#        "EndTime": "2019-12-27T00:00:00Z",
+#        "CreateTime": "2019-12-27T08:11:13Z",
+#        "NumBillableObjects": 1,
 #        "NumBillableDeletedObjects": 0,
-#        "RawStorageSizeBytes": 322122547200,
-#        "PaddedStorageSizeBytes": 322122547200,
-#        "MetadataStorageSizeBytes": 144,
+#        "RawStorageSizeBytes": 1073741824,
+#        "PaddedStorageSizeBytes": 1073741824,
+#        "MetadataStorageSizeBytes": 48,
 #        "DeletedStorageSizeBytes": 0,
 #        "OrphanedStorageSizeBytes": 0,
-#        "MinStorageChargeBytes": 777389080432,
-#        "NumAPICalls": 5,
-#        "UploadBytes": 322122548200,
-#        "DownloadBytes": 0,
-#        "StorageWroteBytes": 322122547200,
+#        "NumAPICalls": 0,
+#        "UploadBytes": 1077661331,
+#        "DownloadBytes": 106958,
+#        "StorageWroteBytes": 1073741824,
 #        "StorageReadBytes": 0,
 #        "NumGETCalls": 0,
-#        "NumPUTCalls": 3,
+#        "NumPUTCalls": 128,
 #        "NumDELETECalls": 0,
-#        "NumLISTCalls": 0,
+#        "NumLISTCalls": 2,
 #        "NumHEADCalls": 0,
-#        "DeleteBytes": 0
+#        "DeleteBytes": 0,
+#        "Bucket": "jk",
+#        "Region": "us-east-1"
 #    },
 #]
 # FAIL
 #[] (NULL)
 #
 from datetime import datetime
-def get_util_subaccount(id, **dateParams):
+def get_bucket_util_subaccount(id, **dateParams):
     # initializing format
     format = "%Y-%m-%d"
     
@@ -110,8 +112,8 @@ def get_util_subaccount(id, **dateParams):
     fromDate = ""  # start date 'YY-MM-DD'
     toDate   = ""  # end date 'YY-MM-DD'
     
-    ## Utilization Information
-    utils = {}   
+    ## Sub-Accounts Information
+    accts = {}   
 
     logger.debug(f"Input parameter =  {dateParams}")
 
@@ -163,7 +165,7 @@ def get_util_subaccount(id, **dateParams):
         logger.debug(f"No input parameter given.")
     else:
         logger.error(f"Input parameter is wrong")
-        return utils # {} NULL
+        return accts # {} NULL
 
     # If optional parameter (latest=true) is specified
     if latestFlag:
@@ -183,8 +185,8 @@ def get_util_subaccount(id, **dateParams):
         'Authorization':api_key_value
     }
 
-    # GET /v1/accounts/<AcctNum>/utilizations
-    url = "{}/v1/accounts/{}/utilizations".format(url, id)
+    # /v1/accounts/<AcctNum>/utilizations/buckets
+    url = "{}/v1/accounts/{}/utilizations/buckets".format(url, id)
 
     logger.info(f"Target URL is {url}")
 
@@ -200,19 +202,20 @@ def get_util_subaccount(id, **dateParams):
     logger.debug(f"{type(r.json())}");  
 
     if r.status_code == 200:
-        utils = r.json()       
-    for util in utils:
+        accts = r.json()       
+    for util in accts:
         logger.debug("===================================================================================");
         logger.debug(util);
         logger.debug("-----------------------------------------------------------------------------------");
         logger.info(f"Utilization Number : {util['UtilizationNum']}");
         logger.info(f"Account Number     : {util['AcctNum']}");
         logger.info(f"Account Plan Number: {util['AcctPlanNum']}");
+        logger.info(f"Bucket Number      : {util['BucketNum']}");
         logger.info(f"Start Time         : {util['StartTime']}");
         logger.info(f"End Time           : {util['EndTime']}");
         logger.info(f"Create Time        : {util['CreateTime']}");        
 
-    return utils
+    return accts
 
 # for the execution of this script only
 def main():
@@ -231,9 +234,9 @@ def main():
 
     #################################################################
     # case 1: no parameter
-    logger.debug(f"Calling get_util_subaccount(id) ...")
-    all_utils = get_util_subaccount(id)
-    logger.debug(f"get_util_subaccount(id).")  
+    logger.debug(f"Calling get_bucket_util_subaccount(id) ...")
+    all_utils = get_bucket_util_subaccount(id)
+    logger.debug(f"get_bucket_util_subaccount(id).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -241,9 +244,9 @@ def main():
 
     #################################################################
     # case 2: with parameter (f and t)
-    logger.debug(f"Calling get_util_subaccount(id, f, t) ...")
-    all_utils = get_util_subaccount(id, f="2023-11-03", t="2023-11-09")
-    logger.debug(f"get_util_subaccount(id, f,t).")  
+    logger.debug(f"Calling get_bucket_util_subaccount(id, f, t) ...")
+    all_utils = get_bucket_util_subaccount(id, f="2023-11-03", t="2023-11-09")
+    logger.debug(f"get_bucket_util_subaccount(id, f,t).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -252,7 +255,7 @@ def main():
     #################################################################
     # case 3: with parameter (f only) [Should Fail]
     logger.debug(f"Calling get_util_control_subaccounts(id, f) ...")
-    all_utils = get_util_subaccount(id, f="2023-11-03")  
+    all_utils = get_bucket_util_subaccount(id, f="2023-11-03")  
     logger.debug(f"get_util_control_subaccounts(id, f).")  
 
     ## return value 
@@ -261,9 +264,9 @@ def main():
 
     #################################################################
     # case 4: with parameter (latest='true')
-    logger.debug(f"Calling get_util_subaccount(id, latest) ...")
-    all_utils = get_util_subaccount(id, latest='true')
-    logger.debug(f"get_util_subaccount(id, latest).")  
+    logger.debug(f"Calling get_bucket_util_subaccount(id, latest) ...")
+    all_utils = get_bucket_util_subaccount(id, latest='true')
+    logger.debug(f"get_bucket_util_subaccount(id, latest).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -271,9 +274,9 @@ def main():
 
     #################################################################
     # case 5: with parameter (f and t and latest='true')
-    logger.debug(f"Calling get_util_subaccount(id, f, t, latest) ...")
-    all_utils = get_util_subaccount(id, f="2023-11-03", t="2023-11-09", latest='true')
-    logger.debug(f"get_util_subaccount(id, f, t, latest).")  
+    logger.debug(f"Calling get_bucket_util_subaccount(id, f, t, latest) ...")
+    all_utils = get_bucket_util_subaccount(id, f="2023-11-03", t="2023-11-09", latest='true')
+    logger.debug(f"get_bucket_util_subaccount(id, f, t, latest).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
