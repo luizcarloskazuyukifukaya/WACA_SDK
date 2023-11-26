@@ -45,7 +45,7 @@ logger.debug(f"Current Logging Level is {level}")
 
 ## WACA API specific URL
 # -----------------------------------------------
-# GET Bucket Utilizations
+# GET Bucket Utilizations for Control and Sub-Accounts
 # https://docs.wasabi.com/docs/get-bucket-utilizations
 # GET /v1/utilizations/buckets 
 # -----------------------------------------------
@@ -53,10 +53,12 @@ logger.debug(f"Current Logging Level is {level}")
 # f: Start date of the utilization (ex. f='2023-11-20')
 # t: End date of the utilization (ex. t='2023-12-20')
 # Example:
-# utils = get_util_bucket_utils(f='2023-10-20', t='2023-12-20') 
+# utils = get_bucket_utils(f='2023-10-20', t='2023-12-20') 
 # -----------------------------------------------
-# Return all daily utilizations of both Control and sub-account
+# Return all daily utilizations of both Control and sub-account 
 # which is broken down into per-bucket components.
+# Using from and to query string parameters (in the format YYYY-MM-DD)
+# will apply date filters to the result set. 
 # ===============================================
 # Response
 # SUCCESS
@@ -103,8 +105,8 @@ def get_bucket_utils(**dateParams):
     fromDate = ""  # start date 'YY-MM-DD'
     toDate   = ""  # end date 'YY-MM-DD'
     
-    ## Sub-Accounts Information
-    accts = {}   
+    ## Bucket Information
+    buckets = {}   
 
     logger.debug(f"Input parameter =  {dateParams}")
 
@@ -138,7 +140,7 @@ def get_bucket_utils(**dateParams):
         logger.debug(f"No input parameter given.")
     else:
         logger.error(f"Input parameter is wrong")
-        return accts # {} NULL
+        return buckets # {} NULL
 
     # From here either param is 2 or 0 and is valid
     # fromDate, toDate to be used when paramValidNum == 2
@@ -162,7 +164,6 @@ def get_bucket_utils(**dateParams):
         'Authorization':api_key_value
     }
 
-    # GET /v1/utilizations/buckets
     url = "{}/v1/utilizations/buckets".format(url)
 
     logger.info(f"Target URL is {url}")
@@ -179,51 +180,51 @@ def get_bucket_utils(**dateParams):
     logger.debug(f"{type(r.json())}");  
 
     if r.status_code == 200:
-        accts = r.json()       
-    for util in accts:
+        buckets = r.json()       
+    for util in buckets:
         logger.debug("===================================================================================");
         logger.debug(util);
         logger.debug("-----------------------------------------------------------------------------------");
-        logger.info(f"Utilization Number : {util['UtilizationNum']}");
-        logger.info(f"Account Number     : {util['AcctNum']}");
-        logger.info(f"Account Plan Number: {util['AcctPlanNum']}");
-        logger.info(f"Start Time         : {util['StartTime']}");
-        logger.info(f"End Time           : {util['EndTime']}");
-        logger.info(f"Create Time        : {util['CreateTime']}");        
+        logger.info(f"Bucket Utilization Number : {util['BucketUtilizationNum']}");
+        logger.info(f"Account Number            : {util['AcctNum']}");
+        logger.info(f"Account Plan Number       : {util['AcctPlanNum']}");
+        logger.info(f"Start Time                : {util['StartTime']}");
+        logger.info(f"End Time                  : {util['EndTime']}");
+        logger.info(f"Create Time               : {util['CreateTime']}");        
 
-    return accts
+    return buckets
 
 # for the execution of this script only
 def main():
     #################################################################
     # case 1: no parameter
     logger.debug(f"Calling get_bucket_utils() ...")
-    all_utils = get_bucket_utils()
+    all_buckets = get_bucket_utils()
     logger.debug(f"get_bucket_utils() completed.")  
 
     ## return value 
-    logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.info(f"{all_buckets}");  
+    logger.debug(f"{type(all_buckets)}");  
 
     #################################################################
     # case 2: with parameter (f and t)
     logger.debug(f"Calling get_bucket_utils(f, t) ...")
-    all_utils = get_bucket_utils(f="2023-11-03", t="2023-11-24")
+    all_buckets = get_bucket_utils(f="2023-11-03", t="2023-11-24")
     logger.debug(f"get_bucket_utils(f, t) completed.")  
 
     ## return value 
-    logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.info(f"{all_buckets}");  
+    logger.debug(f"{type(all_buckets)}");  
 
     #################################################################
     # case 3: with parameter (f only) [Should Fail]
     logger.debug(f"Calling get_bucket_utils(f) ...")
-    all_utils = get_bucket_utils(f="2023-11-03")
+    all_buckets = get_bucket_utils(f="2023-11-03")
     logger.debug(f"get_bucket_utils(f) completed.")  
 
     ## return value 
-    logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.info(f"{all_buckets}");  
+    logger.debug(f"{type(all_buckets)}");  
 
 
 if __name__ == "__main__":
