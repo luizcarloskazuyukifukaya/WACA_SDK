@@ -55,7 +55,7 @@ logger.debug(f"Current Logging Level is {level}")
 # f: Start date of the utilization (ex. f='2023-11-20')
 # t: End date of the utilization (ex. t='2023-12-20')
 # Example:
-# utils = get_util_control_subaccounts(f='2023-10-20', t='20') 
+# utils = get_util_subaccount(id, f='2023-10-20', t='2023-11-20') 
 # INPUT (optional)
 # latest=true 
 # If a latest=true is passed via the query string parameter on the URL path, 
@@ -100,7 +100,7 @@ logger.debug(f"Current Logging Level is {level}")
 #[] (NULL)
 #
 from datetime import datetime
-def get_util_subaccounts(id, **dateParams):
+def get_util_subaccount(id, **dateParams):
     # initializing format
     format = "%Y-%m-%d"
     
@@ -110,8 +110,8 @@ def get_util_subaccounts(id, **dateParams):
     fromDate = ""  # start date 'YY-MM-DD'
     toDate   = ""  # end date 'YY-MM-DD'
     
-    ## Sub-Accounts Information
-    accts = {}   
+    ## Utilization Information
+    utils = {}   
 
     logger.debug(f"Input parameter =  {dateParams}")
 
@@ -163,7 +163,7 @@ def get_util_subaccounts(id, **dateParams):
         logger.debug(f"No input parameter given.")
     else:
         logger.error(f"Input parameter is wrong")
-        return accts # {} NULL
+        return utils # {} NULL
 
     # If optional parameter (latest=true) is specified
     if latestFlag:
@@ -183,16 +183,14 @@ def get_util_subaccounts(id, **dateParams):
         'Authorization':api_key_value
     }
 
+    # GET /v1/accounts/<AcctNum>/utilizations
     url = "{}/v1/accounts/{}/utilizations".format(url, id)
 
     logger.info(f"Target URL is {url}")
 
     ## GET request
     ## requests.get(url, params={key: value}, args)
-    if paramValidNum == 0:
-        r = requests.get( url, headers=api_head);
-    elif paramValidNum == 2:
-        r = requests.get( url, headers=api_head, params=httpParam);
+    r = requests.get( url, headers=api_head, params=httpParam);
 
     ## Response status code
     logger.info(f"status: {r.status_code}") ; 
@@ -202,8 +200,8 @@ def get_util_subaccounts(id, **dateParams):
     logger.debug(f"{type(r.json())}");  
 
     if r.status_code == 200:
-        accts = r.json()       
-    for util in accts:
+        utils = r.json()       
+    for util in utils:
         logger.debug("===================================================================================");
         logger.debug(util);
         logger.debug("-----------------------------------------------------------------------------------");
@@ -214,7 +212,7 @@ def get_util_subaccounts(id, **dateParams):
         logger.info(f"End Time           : {util['EndTime']}");
         logger.info(f"Create Time        : {util['CreateTime']}");        
 
-    return accts
+    return utils
 
 # for the execution of this script only
 def main():
@@ -233,9 +231,9 @@ def main():
 
     #################################################################
     # case 1: no parameter
-    logger.debug(f"Calling get_util_subaccounts(id) ...")
-    all_utils = get_util_subaccounts(id)
-    logger.debug(f"get_util_subaccounts(id).")  
+    logger.debug(f"Calling get_util_subaccount(id) ...")
+    all_utils = get_util_subaccount(id)
+    logger.debug(f"get_util_subaccount(id).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -243,9 +241,9 @@ def main():
 
     #################################################################
     # case 2: with parameter (f and t)
-    logger.debug(f"Calling get_util_subaccounts(id, f, t) ...")
-    all_utils = get_util_subaccounts(id, f="2023-11-03", t="2023-11-09")
-    logger.debug(f"get_util_subaccounts(id, f,t).")  
+    logger.debug(f"Calling get_util_subaccount(id, f, t) ...")
+    all_utils = get_util_subaccount(id, f="2023-11-03", t="2023-11-09")
+    logger.debug(f"get_util_subaccount(id, f,t).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -254,7 +252,7 @@ def main():
     #################################################################
     # case 3: with parameter (f only) [Should Fail]
     logger.debug(f"Calling get_util_control_subaccounts(id, f) ...")
-    all_utils = get_util_subaccounts(id, f="2023-11-03")  
+    all_utils = get_util_subaccount(id, f="2023-11-03")  
     logger.debug(f"get_util_control_subaccounts(id, f).")  
 
     ## return value 
@@ -263,9 +261,9 @@ def main():
 
     #################################################################
     # case 4: with parameter (latest='true')
-    logger.debug(f"Calling get_util_subaccounts(id, latest) ...")
-    all_utils = get_util_subaccounts(id, latest='true')
-    logger.debug(f"get_util_subaccounts(id, latest).")  
+    logger.debug(f"Calling get_util_subaccount(id, latest) ...")
+    all_utils = get_util_subaccount(id, latest='true')
+    logger.debug(f"get_util_subaccount(id, latest).")  
 
     ## return value 
     logger.info(f"{all_utils}");  
@@ -273,9 +271,9 @@ def main():
 
     #################################################################
     # case 5: with parameter (f and t and latest='true')
-    logger.debug(f"Calling get_util_subaccounts(id, f, t, latest) ...")
-    all_utils = get_util_subaccounts(id, f="2023-11-03", t="2023-11-09", latest='true')
-    logger.debug(f"get_util_subaccounts(id, f, t, latest).")  
+    logger.debug(f"Calling get_util_subaccount(id, f, t, latest) ...")
+    all_utils = get_util_subaccount(id, f="2023-11-03", t="2023-11-09", latest='true')
+    logger.debug(f"get_util_subaccount(id, f, t, latest).")  
 
     ## return value 
     logger.info(f"{all_utils}");  

@@ -45,56 +45,58 @@ logger.debug(f"Current Logging Level is {level}")
 
 ## WACA API specific URL
 # -----------------------------------------------
-# GET Utilizations for Control and Sub-Accounts
-# https://docs.wasabi.com/docs/get-utilizations-for-control-and-sub-accounts
-# GET /v1/utilizations
+# GET Bucket Utilizations for Control and Sub-Accounts
+# https://docs.wasabi.com/docs/get-bucket-utilizations
+# GET /v1/utilizations/buckets 
 # -----------------------------------------------
 # INPUT (optional, when provided both should be specified)
 # f: Start date of the utilization (ex. f='2023-11-20')
 # t: End date of the utilization (ex. t='2023-12-20')
 # Example:
-# utils = get_util_control_subaccounts(f='2023-10-20', t='2023-12-20') 
+# utils = get_bucket_utils(f='2023-10-20', t='2023-12-20') 
 # -----------------------------------------------
-# Return the daily storage and data transfer associated 
-# with the Control account and the sub-account, 
-# across all buckets in both the Control and sub-accounts.
+# Return all daily utilizations of both Control and sub-account 
+# which is broken down into per-bucket components.
+# Using from and to query string parameters (in the format YYYY-MM-DD)
+# will apply date filters to the result set. 
 # ===============================================
 # Response
 # SUCCESS
 #[
 #    {
-#        "UtilizationNum": 39247161,
-#        "AcctNum": 693549,
-#        "AcctPlanNum": 803221,
-#        "StartTime": "2021-12-19T00:00:00Z",
-#        "EndTime": "2021-12-20T00:00:00Z",
-#        "CreateTime": "2021-12-20T02:22:41Z",
-#        "NumBillableObjects": 3,
+#        "BucketUtilizationNum": 6947980,
+#        "AcctNum": 101430,
+#        "AcctPlanNum": 0,
+#        "BucketNum": 1011082,
+#        "StartTime": "2019-12-26T00:00:00Z",
+#        "EndTime": "2019-12-27T00:00:00Z",
+#        "CreateTime": "2019-12-27T08:11:13Z",
+#        "NumBillableObjects": 1,
 #        "NumBillableDeletedObjects": 0,
-#        "RawStorageSizeBytes": 322122547200,
-#        "PaddedStorageSizeBytes": 322122547200,
-#        "MetadataStorageSizeBytes": 144,
+#        "RawStorageSizeBytes": 1073741824,
+#        "PaddedStorageSizeBytes": 1073741824,
+#        "MetadataStorageSizeBytes": 48,
 #        "DeletedStorageSizeBytes": 0,
 #        "OrphanedStorageSizeBytes": 0,
-#        "MinStorageChargeBytes": 777389080432,
-#        "NumAPICalls": 5,
-#        "UploadBytes": 322122548200,
-#        "DownloadBytes": 0,
-#        "StorageWroteBytes": 322122547200,
+#        "NumAPICalls": 132,
+#        "UploadBytes": 1077661331,
+#        "DownloadBytes": 106958,
+#        "StorageWroteBytes": 1073741824,
 #        "StorageReadBytes": 0,
 #        "NumGETCalls": 0,
-#        "NumPUTCalls": 3,
+#        "NumPUTCalls": 0,
 #        "NumDELETECalls": 0,
 #        "NumLISTCalls": 0,
 #        "NumHEADCalls": 0,
-#        "DeleteBytes": 0
+#        "DeleteBytes": 0, "Bucket": "1.bug2189",
+#        "Region": "us-east-1"
 #    },
 #]
 # FAIL
 #[] (NULL)
 #
 from datetime import datetime
-def get_util_control_subaccounts(**dateParams):
+def get_bucket_utils(**dateParams):
     # initializing format
     format = "%Y-%m-%d"
     
@@ -103,8 +105,8 @@ def get_util_control_subaccounts(**dateParams):
     fromDate = ""  # start date 'YY-MM-DD'
     toDate   = ""  # end date 'YY-MM-DD'
     
-    ## Sub-Accounts Information
-    accts = {}   
+    ## Bucket Information
+    buckets = {}   
 
     logger.debug(f"Input parameter =  {dateParams}")
 
@@ -138,7 +140,7 @@ def get_util_control_subaccounts(**dateParams):
         logger.debug(f"No input parameter given.")
     else:
         logger.error(f"Input parameter is wrong")
-        return accts # {} NULL
+        return buckets # {} NULL
 
     # From here either param is 2 or 0 and is valid
     # fromDate, toDate to be used when paramValidNum == 2
@@ -162,7 +164,7 @@ def get_util_control_subaccounts(**dateParams):
         'Authorization':api_key_value
     }
 
-    url = "{}/v1/utilizations".format(url)
+    url = "{}/v1/utilizations/buckets".format(url)
 
     logger.info(f"Target URL is {url}")
 
@@ -178,51 +180,51 @@ def get_util_control_subaccounts(**dateParams):
     logger.debug(f"{type(r.json())}");  
 
     if r.status_code == 200:
-        accts = r.json()       
-    for util in accts:
+        buckets = r.json()       
+    for util in buckets:
         logger.debug("===================================================================================");
         logger.debug(util);
         logger.debug("-----------------------------------------------------------------------------------");
-        logger.info(f"Utilization Number : {util['UtilizationNum']}");
-        logger.info(f"Account Number     : {util['AcctNum']}");
-        logger.info(f"Account Plan Number: {util['AcctPlanNum']}");
-        logger.info(f"Start Time         : {util['StartTime']}");
-        logger.info(f"End Time           : {util['EndTime']}");
-        logger.info(f"Create Time        : {util['CreateTime']}");        
+        logger.info(f"Bucket Utilization Number : {util['BucketUtilizationNum']}");
+        logger.info(f"Account Number            : {util['AcctNum']}");
+        logger.info(f"Account Plan Number       : {util['AcctPlanNum']}");
+        logger.info(f"Start Time                : {util['StartTime']}");
+        logger.info(f"End Time                  : {util['EndTime']}");
+        logger.info(f"Create Time               : {util['CreateTime']}");        
 
-    return accts
+    return buckets
 
 # for the execution of this script only
 def main():
     #################################################################
     # case 1: no parameter
-    logger.debug(f"Calling get_util_control_subaccounts() ...")
-    all_utils = get_util_control_subaccounts()
-    logger.debug(f"get_util_control_subaccounts() completed.")  
+    logger.debug(f"Calling get_bucket_utils() ...")
+    all_buckets = get_bucket_utils()
+    logger.debug(f"get_bucket_utils() completed.")  
 
     ## return value 
-    logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.info(f"{all_buckets}");  
+    logger.debug(f"{type(all_buckets)}");  
 
     #################################################################
     # case 2: with parameter (f and t)
-    logger.debug(f"Calling get_util_control_subaccounts(f, t) ...")
-    all_utils = get_util_control_subaccounts(f="2023-11-03", t="2023-11-24")
-    logger.debug(f"get_util_control_subaccounts(f, t) completed.")  
+    logger.debug(f"Calling get_bucket_utils(f, t) ...")
+    all_buckets = get_bucket_utils(f="2023-11-03", t="2023-11-24")
+    logger.debug(f"get_bucket_utils(f, t) completed.")  
 
     ## return value 
-    logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.info(f"{all_buckets}");  
+    logger.debug(f"{type(all_buckets)}");  
 
     #################################################################
     # case 3: with parameter (f only) [Should Fail]
-    logger.debug(f"Calling get_util_control_subaccounts(f) ...")
-    all_utils = get_util_control_subaccounts(f="2023-11-03")
-    logger.debug(f"get_util_control_subaccounts(f) completed.")  
+    logger.debug(f"Calling get_bucket_utils(f) ...")
+    all_buckets = get_bucket_utils(f="2023-11-03")
+    logger.debug(f"get_bucket_utils(f) completed.")  
 
     ## return value 
-    logger.info(f"{all_utils}");  
-    logger.debug(f"{type(all_utils)}");  
+    logger.info(f"{all_buckets}");  
+    logger.debug(f"{type(all_buckets)}");  
 
 
 if __name__ == "__main__":
